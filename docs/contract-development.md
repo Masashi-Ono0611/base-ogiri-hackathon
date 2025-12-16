@@ -3,8 +3,7 @@
 This repository includes a minimal Hardhat setup for Base Sepolia contract development.
 
 ## Prerequisites
-- Node.js: use a **Hardhat-supported** version (recommended: Node **20 LTS** or **22 LTS**).
-  - Current environment may show a warning if using Node 23.x.
+- Node.js: use a **Hardhat-supported** version (current version: **22 LTS**).
 - pnpm
 
 ## Environment Variables
