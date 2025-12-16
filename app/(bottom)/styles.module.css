@@ -164,6 +164,46 @@
   backdrop-filter: blur(12px);
 }
 
+ .alert {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+ }
+
+ .alertTitle {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-text);
+ }
+
+ .alertText {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+ }
+
+ .alertButton {
+  margin-top: 0.25rem;
+  align-self: flex-start;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+ }
+
+ .alertButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+ }
+
 .navLink {
   display: flex;
   align-items: center;
