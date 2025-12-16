@@ -32,6 +32,17 @@ export default function DepositPage() {
 
   const [lockId, setLockId] = useState<string>("");
   const [status, setStatus] = useState<string>("");
+  const [statusIsError, setStatusIsError] = useState(false);
+  const [isDepositing, setIsDepositing] = useState(false);
+  const [approveTxHash, setApproveTxHash] = useState<`0x${string}` | "">("");
+  const [isApproveConfirmed, setIsApproveConfirmed] = useState(false);
+  const [createTxHash, setCreateTxHash] = useState<`0x${string}` | "">("");
+  const [isCreateConfirmed, setIsCreateConfirmed] = useState(false);
+
+  const approveExplorerUrl = approveTxHash
+    ? `https://sepolia.basescan.org/tx/${approveTxHash}`
+    : "";
+  const createExplorerUrl = createTxHash ? `https://sepolia.basescan.org/tx/${createTxHash}` : "";
 
   const secretHex = useMemo(() => secretStringToHex(secretPlain), [secretPlain]);
   const hashlock = useMemo(() => {
@@ -52,6 +63,55 @@ export default function DepositPage() {
     return BigInt(Math.floor(ms / 1000));
   }, [unlockAtLocal]);
 
+  const preflightError = useMemo(() => {
+    if (isDepositing) return "";
+    if (!isConnected || !address) return "Connect your wallet first.";
+    if (!publicClient) return "Public client not available.";
+    if (!amountInput.trim()) return "Amount is required.";
+
+    try {
+      const amount = parseUnits(amountInput, USDC_DECIMALS);
+      if (amount <= BigInt(0)) return "Amount must be > 0";
+    } catch {
+      return "Amount is invalid.";
+    }
+
+    if (!unlockAtLocal) return "Unlock datetime is required.";
+    if (unlockTime <= BigInt(Math.floor(Date.now() / 1000))) return "Unlock time must be in the future.";
+    if (!secretPlain.trim()) return "Secret is required. Enter a phrase you will remember.";
+    return "";
+  }, [isDepositing, isConnected, address, publicClient, amountInput, unlockAtLocal, unlockTime, secretPlain]);
+
+  const statusDisplay = useMemo(() => {
+    if (!status && !lockId) return preflightError;
+    const base = status || preflightError;
+    if (!lockId) return base;
+    return `${base}${base ? " " : ""}(LockId: ${lockId})`;
+  }, [status, lockId, preflightError]);
+
+  const statusLineClassName = useMemo(() => {
+    if (status) return statusIsError ? styles.error : styles.status;
+    if (preflightError) return styles.error;
+    return styles.status;
+  }, [status, statusIsError, preflightError]);
+
+  const isReadyToDeposit = useMemo(() => {
+    if (!isConnected || !address) return false;
+    if (!publicClient) return false;
+    if (!secretPlain.trim()) return false;
+    if (!unlockAtLocal) return false;
+    if (unlockTime <= BigInt(Math.floor(Date.now() / 1000))) return false;
+
+    try {
+      const amount = parseUnits(amountInput, USDC_DECIMALS);
+      if (amount <= BigInt(0)) return false;
+    } catch {
+      return false;
+    }
+
+    return true;
+  }, [isConnected, address, publicClient, secretPlain, unlockAtLocal, unlockTime, amountInput]);
+
   const unlockDateText = useMemo(() => {
     if (unlockTime <= BigInt(0)) return "";
     const ms = Number(unlockTime) * 1000;
@@ -60,50 +120,76 @@ export default function DepositPage() {
   }, [unlockTime]);
 
   async function handleDeposit() {
+    if (isDepositing) return;
+
+    setStatus("");
+    setStatusIsError(false);
+    setLockId("");
+    setApproveTxHash("");
+    setIsApproveConfirmed(false);
+    setCreateTxHash("");
+    setIsCreateConfirmed(false);
+
+    if (!isConnected || !address) {
+      setStatus("Connect your wallet first.");
+      setStatusIsError(true);
+      return;
+    }
+    if (!publicClient) {
+      setStatus("Public client not available.");
+      setStatusIsError(true);
+      return;
+    }
+    if (!secretPlain.trim()) {
+      setStatus("Secret is required. Enter a phrase you will remember.");
+      setStatusIsError(true);
+      return;
+    }
+
+    let amount: bigint;
     try {
-      setStatus("");
-      setLockId("");
+      amount = parseUnits(amountInput, USDC_DECIMALS);
+    } catch {
+      setStatus("Amount is invalid.");
+      setStatusIsError(true);
+      return;
+    }
+    if (amount <= BigInt(0)) {
+      setStatus("Amount must be > 0");
+      setStatusIsError(true);
+      return;
+    }
+    if (unlockTime <= BigInt(Math.floor(Date.now() / 1000))) {
+      setStatus("Unlock time must be in the future.");
+      setStatusIsError(true);
+      return;
+    }
 
-      if (!isConnected || !address) {
-        setStatus("Connect your wallet first.");
-        return;
-      }
-      if (!publicClient) {
-        setStatus("Public client not available.");
-        return;
-      }
-      if (!secretPlain.trim()) {
-        setStatus("Secret is required. Enter a phrase you will remember.");
-        return;
-      }
-
-      const amount = parseUnits(amountInput, USDC_DECIMALS);
-      if (amount <= BigInt(0)) {
-        setStatus("Amount must be > 0");
-        return;
-      }
-      if (unlockTime <= BigInt(Math.floor(Date.now() / 1000))) {
-        setStatus("Unlock time must be in the future.");
-        return;
-      }
-
+    setIsDepositing(true);
+    try {
       setStatus("Approving USDC...");
+      setStatusIsError(false);
       const approveHash = await writeContractAsync({
         address: USDC_BASE_SEPOLIA,
         abi: erc20Abi,
         functionName: "approve",
         args: [HTLC_CONTRACT_ADDRESS, amount],
       });
+      setApproveTxHash(approveHash);
       await publicClient.waitForTransactionReceipt({ hash: approveHash });
+      setIsApproveConfirmed(true);
 
       setStatus("Creating lock...");
+      setStatusIsError(false);
       const createHash = await writeContractAsync({
         address: HTLC_CONTRACT_ADDRESS,
         abi: htlcAbi,
         functionName: "createLock",
         args: [USDC_BASE_SEPOLIA, amount, hashlock as Hex, unlockTime],
       });
+      setCreateTxHash(createHash);
       const receipt = await publicClient.waitForTransactionReceipt({ hash: createHash });
+      setIsCreateConfirmed(true);
 
       const created = receipt.logs.find((l) => l.address.toLowerCase() === HTLC_CONTRACT_ADDRESS.toLowerCase());
       if (created) {
@@ -122,9 +208,13 @@ export default function DepositPage() {
       }
 
       setStatus("Lock created.");
+      setStatusIsError(false);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setStatus(msg);
+      setStatusIsError(true);
+    } finally {
+      setIsDepositing(false);
     }
   }
 
@@ -191,16 +281,41 @@ export default function DepositPage() {
         </div>
       </details>
 
-      <button type="button" className={styles.button} onClick={handleDeposit}>
-        Approve + Create Lock
+      <button
+        type="button"
+        className={styles.button}
+        onClick={handleDeposit}
+        disabled={!isReadyToDeposit || isDepositing}
+      >
+        {isDepositing ? "Processing..." : "Approve + Create Lock"}
       </button>
 
-      {status && <p className={styles.error}>{status}</p>}
-      {lockId && (
-        <p className={styles.subtitle}>
-          LockId: <span className={styles.mono}>{lockId}</span>
+      {statusDisplay && (
+        <p className={statusLineClassName}>
+          <strong>Status:</strong> {statusDisplay}
         </p>
       )}
+
+      {createTxHash && (
+        <p className={styles.status}>
+          <strong>CreateLock Tx:</strong> {" "}
+          {isCreateConfirmed ? "included in a block" : "broadcast complete"}: {" "}
+          <a href={createExplorerUrl} target="_blank" rel="noreferrer">
+            View on explorer
+          </a>
+        </p>
+      )}
+
+      {approveTxHash && (
+        <p className={styles.status}>
+          <strong>Approve Tx:</strong> {" "}
+          {isApproveConfirmed ? "included in a block" : "broadcast complete"}: {" "}
+          <a href={approveExplorerUrl} target="_blank" rel="noreferrer">
+            View on explorer
+          </a>
+        </p>
+      )}
+
     </div>
   );
 }

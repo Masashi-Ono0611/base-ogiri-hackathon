@@ -142,6 +142,17 @@
   transform: translateY(-1px);
 }
 
+.status {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.status a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
 .error {
   color: var(--color-danger);
   font-size: 0.9rem;
