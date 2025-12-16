@@ -26,7 +26,7 @@ git clone https://github.com/base/demos.git
 
 ```bash
 cd demos/minikit/waitlist-mini-app-qs
-npm install
+pnpm install
 ```
 
 ### 3. Configure environment variables
@@ -42,7 +42,7 @@ NEXT_PUBLIC_URL=
 ### 4. Run locally:
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 ## Customization
