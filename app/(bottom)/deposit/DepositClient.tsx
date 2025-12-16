@@ -1,10 +1,18 @@
 "use client";
 
 import styles from "../styles.module.css";
+import { useEffect, useState } from "react";
 import { useDepositModel } from "./useDepositModel";
 
 export default function DepositClient() {
+  const [mounted, setMounted] = useState(false);
   const m = useDepositModel();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
     <div className={styles.card}>
