@@ -30,14 +30,14 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
- package-lock.json
- npm-shrinkwrap.json
+package-lock.json
+npm-shrinkwrap.json
 
- # hardhat
- artifacts/
- cache/
- coverage/
- typechain-types/
+# hardhat
+artifacts/
+cache/
+coverage/
+typechain-types/
 
 # env files (can opt-in for committing if needed)
 .env*
