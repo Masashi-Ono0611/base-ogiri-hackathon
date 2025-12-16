@@ -20,7 +20,7 @@ Build a Base Mini App that enables a “grandchild token inheritance” flow usi
 
 ## 3. Actors / Personas
 - **Depositor (Grandparent)**: locks tokens and creates the “inheritance document” PDF.
-- **Beneficiary (Grandchild)**: receives the secret out-of-band (paper/handwritten) and later unlocks.
+- **Claimant (Grandchild)**: receives the secret out-of-band (paper/handwritten) and later claims the funds.
 
 ## 4. User Stories
 ### 4.1 Deposit (Lock)
@@ -50,10 +50,10 @@ Build a Base Mini App that enables a “grandchild token inheritance” flow usi
   - Optionally: include a placeholder line “Secret (to be handwritten): ________”.
 
 ### 4.3 Unlock / Claim
-- As a beneficiary, I can input:
+- As a claimant, I can input:
   - lock identifier (contract address or lock id)
   - secret
-- As a beneficiary, I can claim tokens if conditions are met.
+- As a claimant, I can claim tokens if conditions are met.
 
 ## 5. Contract Requirements
 ### 5.1 Contract Type
@@ -62,7 +62,6 @@ Prefer a **single contract** managing multiple locks by `lockId`, to avoid deplo
 ### 5.2 Data Model (on-chain)
 A lock should contain:
 - `depositor: address`
-- `beneficiary: address` (optional in v1 if unknown; but recommended)
 - `token: address`
 - `amount: uint256`
 - `hashlock: bytes32`
@@ -70,14 +69,11 @@ A lock should contain:
 - `claimed: bool`
 
 ### 5.3 Core Functions (proposed)
-- `createLock(token, beneficiary, amount, hashlock, unlockTime) returns (lockId)`
+- `createLock(token, amount, hashlock, unlockTime) returns (lockId)`
   - Requires ERC20 `transferFrom` from depositor.
 - `claim(lockId, secret)`
   - Validates `keccak256(secret) == hashlock` and `block.timestamp >= unlockTime` and not claimed.
-  - Transfers tokens to beneficiary.
-- `refund(lockId)` (optional for v1)
-  - If beneficiary never claims, depositor can reclaim after a long timeout.
-  - Not required unless requested.
+  - Transfers tokens to `msg.sender` (any caller who knows the secret).
 
 ### 5.4 Hashing
 - Secret representation (canonical): `bytes` / `bytes32`.
@@ -85,8 +81,8 @@ A lock should contain:
 - App must compute hash **exactly** matching contract.
 
 ### 5.5 Events
-- `LockCreated(lockId, depositor, beneficiary, token, amount, hashlock, unlockTime)`
-- `LockClaimed(lockId, beneficiary)`
+- `LockCreated(lockId, depositor, token, amount, hashlock, unlockTime)`
+- `LockClaimed(lockId, claimer)`
 
 ### 5.6 Security
 - Reentrancy protection on claim.
@@ -96,7 +92,7 @@ A lock should contain:
 ## 6. App Requirements (Next.js Base Mini App)
 ### 6.1 Screens
 - **Deposit screen**
-  - Inputs: beneficiary address, amount, unlock date, secret generation.
+  - Inputs: amount, unlock date, secret generation.
   - Output: lockId/txHash.
 - **PDF screen**
   - Form fields for Japanese letter template.
@@ -119,15 +115,14 @@ A lock should contain:
 - Client-side generation preferred (e.g. `pdf-lib`) to avoid server complexity.
 - Document structure:
   - Heading
-  - Parties (depositor/beneficiary)
+  - Parties (depositor/claimant)
   - Statement of intent
   - Asset details (USDC, amount)
   - Lock details (contract address/lockId, hashlock, timelock)
   - Signature area
 
 ## 7. Open Questions (to decide before coding)
-- Should beneficiary address be mandatory at deposit time?
-- Do we need refund functionality?
+- Should claim always transfer to `msg.sender` (current) or should we support an explicit receiver address?
 - Exact Japanese legal text template requirements?
 - How to represent lock identifier in the PDF (lockId vs contract address)?
 
