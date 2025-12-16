@@ -10,7 +10,8 @@ import {
   USDC_DECIMALS,
   erc20Abi,
   htlcAbi,
-  randomHex,
+  generateHumanSecret,
+  secretStringToHex,
 } from "../_shared";
 
 function formatDatetimeLocal(date: Date): string {
@@ -27,19 +28,16 @@ export default function DepositPage() {
 
   const [amountInput, setAmountInput] = useState("0.01");
   const [unlockAtLocal, setUnlockAtLocal] = useState<string>("");
-  const [secret, setSecret] = useState<Hex>(() => "0x" as Hex);
-  const [hashlock, setHashlock] = useState<Hex>(() => "0x" as Hex);
+  const [secretPlain, setSecretPlain] = useState<string>("");
 
   const [lockId, setLockId] = useState<string>("");
   const [status, setStatus] = useState<string>("");
 
-  useEffect(() => {
-    if (secret.startsWith("0x") && secret.length === 66) {
-      setHashlock(keccak256(secret));
-    } else {
-      setHashlock("0x" as Hex);
-    }
-  }, [secret]);
+  const secretHex = useMemo(() => secretStringToHex(secretPlain), [secretPlain]);
+  const hashlock = useMemo(() => {
+    if (secretHex === ("0x" as Hex)) return "0x" as Hex;
+    return keccak256(secretHex);
+  }, [secretHex]);
 
   useEffect(() => {
     if (!unlockAtLocal) {
@@ -74,9 +72,8 @@ export default function DepositPage() {
         setStatus("Public client not available.");
         return;
       }
-
-      if (!secret.startsWith("0x") || secret.length !== 66) {
-        setStatus("Secret must be a 32-byte hex string (0x + 64 hex chars). Use Generate.");
+      if (!secretPlain.trim()) {
+        setStatus("Secret is required. Enter a phrase you will remember.");
         return;
       }
 
@@ -156,27 +153,26 @@ export default function DepositPage() {
         onChange={(e) => setUnlockAtLocal(e.target.value)}
       />
 
-      <button type="button" className={styles.button} onClick={() => setSecret(randomHex(32))}>
+      <button type="button" className={styles.button} onClick={() => setSecretPlain(generateHumanSecret())}>
         Generate Secret
       </button>
 
       <div className={styles.subtitle}>
         <strong>Secret</strong>
         <div>
+          Enter any phrase. We auto-generate the hashlock from this secret.
+          <br />
           Required to claim. If leaked, anyone can claim after unlock.
         </div>
       </div>
       <input
         className={styles.input}
-        value={secret}
-        onChange={(e) => setSecret(e.target.value as Hex)}
-        placeholder="Secret (0x...)"
+        value={secretPlain}
+        onChange={(e) => setSecretPlain(e.target.value)}
+        placeholder="Secret (plain text)"
       />
 
       <div className={styles.subtitle}>
-        <div>
-          Hashlock: <span className={styles.mono}>{hashlock}</span>
-        </div>
         <div>
           UnlockTime: <span className={styles.mono}>{unlockTime.toString()}</span>
         </div>
@@ -186,6 +182,16 @@ export default function DepositPage() {
           </div>
         )}
       </div>
+
+      <details className={styles.subtitle}>
+        <summary>Advanced</summary>
+        <div>
+          Hashlock (auto): <span className={styles.mono}>{hashlock}</span>
+        </div>
+        <div>
+          Secret bytes (auto): <span className={styles.mono}>{secretHex}</span>
+        </div>
+      </details>
 
       <button type="button" className={styles.button} onClick={handleDeposit}>
         Approve + Create Lock

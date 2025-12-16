@@ -1,4 +1,4 @@
-import { type Abi, type Hex } from "viem";
+import { toHex, type Abi, type Hex } from "viem";
 
 export const HTLC_CONTRACT_ADDRESS = "0x5260a97eDaA53eF5edA4094f514Ef9973C310eD7" as const;
 export const USDC_BASE_SEPOLIA = "0x036CbD53842c5426634e7929541eC2318f3dCF7e" as const;
@@ -61,4 +61,18 @@ export function randomHex(bytesLength: number): Hex {
   return (`0x${Array.from(bytes)
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("")}`) as Hex;
+}
+
+export function secretStringToHex(secret: string): Hex {
+  const trimmed = secret.trim();
+  if (!trimmed) return "0x" as Hex;
+  if (trimmed.startsWith("0x")) return trimmed as Hex;
+  return toHex(trimmed) as Hex;
+}
+
+export function generateHumanSecret(): string {
+  const bytes = new Uint8Array(18);
+  crypto.getRandomValues(bytes);
+  const binary = String.fromCharCode(...Array.from(bytes));
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 }

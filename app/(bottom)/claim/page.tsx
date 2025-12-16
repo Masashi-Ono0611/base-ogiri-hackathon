@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { type Hex } from "viem";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
 import styles from "../styles.module.css";
-import { HTLC_CONTRACT_ADDRESS, htlcAbi } from "../_shared";
+import { HTLC_CONTRACT_ADDRESS, htlcAbi, secretStringToHex } from "../_shared";
 
 export default function ClaimPage() {
   const { isConnected } = useAccount();
@@ -12,7 +11,7 @@ export default function ClaimPage() {
   const { writeContractAsync } = useWriteContract();
 
   const [claimLockId, setClaimLockId] = useState<string>("");
-  const [claimSecret, setClaimSecret] = useState<Hex>(() => "0x" as Hex);
+  const [claimSecretPlain, setClaimSecretPlain] = useState<string>("");
   const [claimStatus, setClaimStatus] = useState<string>("");
 
   async function handleClaim() {
@@ -27,8 +26,8 @@ export default function ClaimPage() {
         setClaimStatus("Public client not available.");
         return;
       }
-      if (!claimSecret.startsWith("0x") || claimSecret.length !== 66) {
-        setClaimStatus("Secret must be a 32-byte hex string (0x + 64 hex chars).");
+      if (!claimSecretPlain.trim()) {
+        setClaimStatus("Secret is required.");
         return;
       }
       if (!claimLockId.trim()) {
@@ -45,11 +44,12 @@ export default function ClaimPage() {
       }
 
       setClaimStatus("Submitting claim...");
+      const secretHex = secretStringToHex(claimSecretPlain);
       const txHash = await writeContractAsync({
         address: HTLC_CONTRACT_ADDRESS,
         abi: htlcAbi,
         functionName: "claim",
-        args: [id, claimSecret],
+        args: [id, secretHex],
       });
       await publicClient.waitForTransactionReceipt({ hash: txHash });
       setClaimStatus("Claimed.");
@@ -81,13 +81,13 @@ export default function ClaimPage() {
 
       <div className={styles.subtitle}>
         <strong>Secret</strong>
-        <div>32-byte hex string (0x + 64 hex chars).</div>
+        <div>The plain text secret used on the Deposit page.</div>
       </div>
       <input
         className={styles.input}
-        value={claimSecret}
-        onChange={(e) => setClaimSecret(e.target.value as Hex)}
-        placeholder="Secret (0x...)"
+        value={claimSecretPlain}
+        onChange={(e) => setClaimSecretPlain(e.target.value)}
+        placeholder="Secret (plain text)"
       />
 
       <button type="button" className={styles.button} onClick={handleClaim}>
