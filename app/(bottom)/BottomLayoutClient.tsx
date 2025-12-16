@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
+import { sdk } from "@farcaster/miniapp-sdk";
 import {
   ConnectWallet,
   Wallet,
@@ -25,6 +26,10 @@ export function BottomLayoutClient({ children }: { children: React.ReactNode }) 
   const { switchChainAsync, isPending: isSwitching } = useSwitchChain();
   const [switchError, setSwitchError] = useState<string>("");
   const [hasAttemptedAutoSwitch, setHasAttemptedAutoSwitch] = useState(false);
+  const [miniAppSdkReady, setMiniAppSdkReady] = useState<"unknown" | "ready" | "error">("unknown");
+  const [miniAppIsInMiniApp, setMiniAppIsInMiniApp] = useState<boolean | null>(null);
+  const [miniAppChains, setMiniAppChains] = useState<string[]>([]);
+  const [miniAppSdkError, setMiniAppSdkError] = useState<string>("");
 
   const targetChainId = baseSepolia.id;
   const isWrongNetwork = useMemo(() => {
@@ -35,6 +40,36 @@ export function BottomLayoutClient({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (!isFrameReady) setFrameReady();
   }, [isFrameReady, setFrameReady]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadMiniAppCapabilities() {
+      try {
+        await sdk.actions.ready();
+        const isInMiniApp = await sdk.isInMiniApp();
+        const chains = await sdk.getChains();
+        const normalizedChains = Array.isArray(chains) ? chains : [];
+        if (cancelled) return;
+        setMiniAppSdkReady("ready");
+        setMiniAppIsInMiniApp(isInMiniApp);
+        setMiniAppChains(normalizedChains);
+        setMiniAppSdkError("");
+      } catch (e) {
+        if (cancelled) return;
+        const msg = e instanceof Error ? e.message : String(e);
+        setMiniAppSdkReady("error");
+        setMiniAppIsInMiniApp(null);
+        setMiniAppChains([]);
+        setMiniAppSdkError(msg);
+      }
+    }
+
+    void loadMiniAppCapabilities();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -118,6 +153,23 @@ export function BottomLayoutClient({ children }: { children: React.ReactNode }) 
       )}
 
       <main className={styles.content}>{children}</main>
+
+      <div className={styles.alert}>
+        <div className={styles.alertTitle}>Mini App Debug</div>
+        <div className={styles.alertText}>
+          SDK: <span className={styles.mono}>{miniAppSdkReady}</span>
+        </div>
+        <div className={styles.alertText}>
+          isInMiniApp: <span className={styles.mono}>{miniAppIsInMiniApp === null ? "null" : String(miniAppIsInMiniApp)}</span>
+        </div>
+        <div className={styles.alertText}>
+          supportedChains:{" "}
+          <span className={styles.mono}>
+            {Array.isArray(miniAppChains) && miniAppChains.length ? miniAppChains.join(", ") : "(empty)"}
+          </span>
+        </div>
+        {miniAppSdkError && <div className={styles.alertText}>SDK error: {miniAppSdkError}</div>}
+      </div>
 
       <nav className={styles.bottomNav}>
         <Link
