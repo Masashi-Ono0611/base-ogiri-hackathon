@@ -5,7 +5,7 @@
 
 ## サマリー（現時点の結論）
 - Base App（iOS）については、ホストの supportedChains に Base Sepolia が存在しないため、
-  - **Base App iOSで Base Sepolia を使うのは難しい（ほぼ不可）**可能性が高い
+  - **Base App iOSで Base Sepolia を使うのは難しい（ほぼ不可）** 可能性が高い
 - Farcaster iOSについては supportedChains に Base Sepolia が存在するが、
   - 「資金不足」判定等の問題で Tx が通らないケースがあり、
   - ホスト提供のウォレット/プロバイダが testnet を完全には扱えていない可能性がある
