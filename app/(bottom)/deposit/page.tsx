@@ -153,26 +153,28 @@ export default function DepositPage() {
         onChange={(e) => setUnlockAtLocal(e.target.value)}
       />
 
-      <button type="button" className={styles.button} onClick={() => setSecretPlain(generateHumanSecret())}>
-        Generate Secret
-      </button>
-
       <div className={styles.subtitle}>
         <strong>Secret</strong>
         <div>
-          Enter any phrase. We auto-generate the hashlock from this secret.
+          Enter any phrase.
           <br />
           Required to claim. If leaked, anyone can claim after unlock.
         </div>
       </div>
-      <input
-        className={styles.input}
-        value={secretPlain}
-        onChange={(e) => setSecretPlain(e.target.value)}
-        placeholder="Secret (plain text)"
-      />
+      <div className={styles.inputRow}>
+        <input
+          className={`${styles.input} ${styles.inputGrow}`}
+          value={secretPlain}
+          onChange={(e) => setSecretPlain(e.target.value)}
+          placeholder="Secret (plain text)"
+        />
+        <button type="button" className={styles.autoButton} onClick={() => setSecretPlain(generateHumanSecret())}>
+          Auto
+        </button>
+      </div>
 
-      <div className={styles.subtitle}>
+      <details className={styles.subtitle}>
+        <summary>Details</summary>
         <div>
           UnlockTime: <span className={styles.mono}>{unlockTime.toString()}</span>
         </div>
@@ -181,15 +183,11 @@ export default function DepositPage() {
             Unlock (local): <span className={styles.mono}>{unlockDateText}</span>
           </div>
         )}
-      </div>
-
-      <details className={styles.subtitle}>
-        <summary>Advanced</summary>
         <div>
-          Hashlock (auto): <span className={styles.mono}>{hashlock}</span>
+          Secret bytes: <span className={styles.mono}>{secretHex}</span>
         </div>
         <div>
-          Secret bytes (auto): <span className={styles.mono}>{secretHex}</span>
+          Hashlock: <span className={styles.mono}>{hashlock}</span>
         </div>
       </details>
 
