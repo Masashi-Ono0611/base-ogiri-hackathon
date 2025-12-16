@@ -9,7 +9,8 @@
     "lint": "next lint",
     "hh:compile": "hardhat compile",
     "hh:test": "hardhat test",
-    "hh:deploy:base-sepolia": "hardhat run scripts/deploy.ts --network baseSepolia"
+    "hh:deploy:base-sepolia": "hardhat run scripts/deploy.ts --network baseSepolia",
+    "hh:smoke:usdc:base-sepolia": "hardhat run scripts/smoke-usdc.ts --network baseSepolia"
   },
   "dependencies": {
     "@coinbase/onchainkit": "^1.1.2",

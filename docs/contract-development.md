@@ -48,7 +48,6 @@ Deployment script:
 
 ## Common Issues
 - **Hardhat warns about unsupported Node versions**: switch to Node 20/22.
-- If you see many generated files (`artifacts/`, `cache/`, `typechain-types/`), they are ignored by git.
 
 ## Base Sepolia References
 - Chain name: Base Sepolia
