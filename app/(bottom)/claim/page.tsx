@@ -13,25 +13,37 @@ export default function ClaimPage() {
   const [claimLockId, setClaimLockId] = useState<string>("");
   const [claimSecretPlain, setClaimSecretPlain] = useState<string>("");
   const [claimStatus, setClaimStatus] = useState<string>("");
+  const [claimStatusIsError, setClaimStatusIsError] = useState(false);
+  const [claimTxHash, setClaimTxHash] = useState<`0x${string}` | "">("");
+  const [isConfirmed, setIsConfirmed] = useState(false);
+
+  const explorerUrl = claimTxHash ? `https://sepolia.basescan.org/tx/${claimTxHash}` : "";
 
   async function handleClaim() {
     try {
       setClaimStatus("");
+      setClaimStatusIsError(false);
+      setClaimTxHash("");
+      setIsConfirmed(false);
 
       if (!isConnected) {
         setClaimStatus("Connect your wallet first.");
+        setClaimStatusIsError(true);
         return;
       }
       if (!publicClient) {
         setClaimStatus("Public client not available.");
+        setClaimStatusIsError(true);
         return;
       }
       if (!claimSecretPlain.trim()) {
         setClaimStatus("Secret is required.");
+        setClaimStatusIsError(true);
         return;
       }
       if (!claimLockId.trim()) {
         setClaimStatus("LockId is required.");
+        setClaimStatusIsError(true);
         return;
       }
 
@@ -40,10 +52,12 @@ export default function ClaimPage() {
         id = BigInt(claimLockId);
       } catch {
         setClaimStatus("LockId must be an integer.");
+        setClaimStatusIsError(true);
         return;
       }
 
-      setClaimStatus("Submitting claim...");
+      setClaimStatus("Submitting transaction...");
+      setClaimStatusIsError(false);
       const secretHex = secretStringToHex(claimSecretPlain);
       const txHash = await writeContractAsync({
         address: HTLC_CONTRACT_ADDRESS,
@@ -51,11 +65,17 @@ export default function ClaimPage() {
         functionName: "claim",
         args: [id, secretHex],
       });
+      setClaimTxHash(txHash);
+      setClaimStatus("Tx broadcast complete.");
+      setClaimStatusIsError(false);
       await publicClient.waitForTransactionReceipt({ hash: txHash });
-      setClaimStatus("Claimed.");
+      setIsConfirmed(true);
+      setClaimStatus("Tx included in a block.");
+      setClaimStatusIsError(false);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setClaimStatus(msg);
+      setClaimStatusIsError(true);
     }
   }
 
@@ -94,7 +114,21 @@ export default function ClaimPage() {
         Claim
       </button>
 
-      {claimStatus && <p className={styles.error}>{claimStatus}</p>}
+      {claimStatus && (
+        <p className={claimStatusIsError ? styles.error : styles.status}>
+          <strong>Status:</strong> {claimStatus}
+        </p>
+      )}
+
+      {claimTxHash && (
+        <p className={styles.status}>
+          <strong>Claim Tx:</strong> {" "}
+          {isConfirmed ? "included in a block" : "broadcast complete"}: {" "}
+          <a href={explorerUrl} target="_blank" rel="noreferrer">
+            View on explorer
+          </a>
+        </p>
+      )}
     </div>
   );
 }
