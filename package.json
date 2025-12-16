@@ -9,10 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@coinbase/onchainkit": "latest",
-    "@farcaster/miniapp-sdk": "^0.1.8",
+    "@coinbase/onchainkit": "^1.1.2",
+    "@farcaster/miniapp-sdk": "^0.2.1",
     "@tanstack/react-query": "^5.81.5",
-    "next": "15.3.6",
+    "next": "16.0.10",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "viem": "^2.31.6",
@@ -20,14 +20,21 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@farcaster/quick-auth": "^0.0.7",
-    "@next/eslint-plugin-next": "^15.3.4",
+    "@farcaster/quick-auth": "^0.0.8",
+    "@next/eslint-plugin-next": "^16.0.10",
     "@react-native-async-storage/async-storage": "^1.24.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.3.4",
-    "typescript": "^5"
-  }
+    "eslint-config-next": "16.0.10",
+    "typescript": "5.8.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "@farcaster/miniapp-sdk": "0.2.1",
+      "use-sync-external-store": "1.4.0"
+    }
+  },
+  "packageManager": "pnpm@9.15.0"
 }
