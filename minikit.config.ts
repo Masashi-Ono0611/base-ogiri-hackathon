@@ -17,7 +17,7 @@ export const minikitConfig = {
     version: "1",
     name: "Token Inheritance",
     subtitle: "HTLC Timelock",
-    description: "Lock USDC with a hashlock + timelock. Anyone with the secret can claim after unlock.",
+    description: "Lock USDC with a hashlock and timelock. Anyone with the secret can claim after unlock.",
     screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`],
     iconUrl: `${ROOT_URL}/blue-icon.png`,
     splashImageUrl: `${ROOT_URL}/blue-hero.png`,
