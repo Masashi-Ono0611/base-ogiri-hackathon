@@ -25,33 +25,38 @@ Build a Base Mini App that enables a “grandchild token inheritance” flow usi
 ## 4. User Stories
 ### 4.1 Deposit (Lock)
 - As a depositor, I can input:
-  - beneficiary name and relationship
-  - depositor name and address
   - token amount
-  - unlock date/time (or “N days from now”)
-  - secret (generated or user-provided)
+  - unlock date/time 
+  - secret (user-provided or auto-generated)
 - As a depositor, I can approve USDC spending and deposit to the contract.
 - As a depositor, I can see:
   - deposit tx hash
-  - created lock contract address (if per-lock proxy) or lock id (if single contract)
+  - created lock contract address (if per-lock proxy)
+  - lock id
   - secret hash
   - unlock timestamp
 
 ### 4.2 Generate PDF (Inheritance Document)
 - As a depositor, I can generate a PDF containing a Japanese inheritance letter template with required fields.
 - The PDF must include:
-  - contract address (or lock id)
+  - contract address
+  - lock id
   - chain name (Base Sepolia)
   - token contract address (USDC)
   - amount
   - timelock/unlock date
   - hashlock (hash)
+- The app should minimize additional inputs on the PDF step.
+  - Lock details must be auto-filled from Step 1.
+  - Names, signature, and date should be handwritten after printing.
 - The PDF should **NOT include the secret** by default.
   - Optionally: include a placeholder line “Secret (to be handwritten): ________”.
 
 ### 4.3 Unlock / Claim
 - As a claimant, I can input:
-  - lock identifier (contract address or lock id)
+  - lock identifier 
+    - contract address
+    - lock id
   - secret
 - As a claimant, I can claim tokens if conditions are met.
 
@@ -94,9 +99,11 @@ A lock should contain:
 - **Deposit screen**
   - Inputs: amount, unlock date, secret generation.
   - Output: lockId/txHash.
-- **PDF screen**
-  - Form fields for Japanese letter template.
-  - Button: generate/download PDF.
+- **Deposit screen (PDF)**
+  - After lock creation, enable a print button for the inheritance document.
+  - Lock details are auto-filled from the deposit transaction.
+  - Names/signature/date are handwritten after printing.
+  - Button: print / save as PDF.
 - **Claim screen**
   - Inputs: lockId, secret.
   - Button: claim.
@@ -112,7 +119,9 @@ A lock should contain:
 - `NEXT_PUBLIC_PROJECT_NAME`
 
 ### 6.4 PDF Generation
-- Client-side generation preferred (e.g. `pdf-lib`) to avoid server complexity.
+- Client-side generation preferred to avoid server complexity.
+- Initial implementation may use an HTML template + `window.print()` and rely on the browser's "Save as PDF".
+- If one-click PDF binary generation becomes necessary later, consider `pdf-lib` with a bundled Japanese font.
 - Document structure:
   - Heading
   - Parties (depositor/claimant)
@@ -125,6 +134,7 @@ A lock should contain:
 - Should claim always transfer to `msg.sender` (current) or should we support an explicit receiver address?
 - Exact Japanese legal text template requirements?
 - How to represent lock identifier in the PDF (lockId vs contract address)?
+  - Use `contract address` + `lockId`.
 
 ## 8. Acceptance Criteria
 - `pnpm build` passes.

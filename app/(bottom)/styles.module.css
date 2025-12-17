@@ -55,6 +55,33 @@
   box-shadow: var(--shadow-elev-1);
 }
 
+.stepHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.stepBadge {
+  min-width: 56px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.stepTitle {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0;
+}
+
 .title {
   font-size: 22px;
   font-weight: 800;
@@ -173,6 +200,90 @@
   border-top: 1px solid var(--color-border);
   background: var(--color-overlay);
   backdrop-filter: blur(12px);
+}
+
+.textarea {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  resize: vertical;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-primary-border);
+  box-shadow: 0 0 0 4px var(--color-primary-ring);
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.printOnly {
+  display: none;
+}
+
+.printDocument {
+  color: #111;
+  background: #fff;
+  padding: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+}
+
+.printTitle {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.printSectionTitle {
+  margin: 18px 0 8px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.printParagraph {
+  margin: 8px 0;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+@media print {
+  .container {
+    background: #fff;
+  }
+
+  .header,
+  .bottomNav,
+  .alert,
+  .card > :not(.printOnly) {
+    display: none !important;
+  }
+
+  .card {
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    max-width: none;
+  }
+
+  .content {
+    padding: 0;
+  }
+
+  .printOnly {
+    display: block;
+  }
 }
 
  .alert {

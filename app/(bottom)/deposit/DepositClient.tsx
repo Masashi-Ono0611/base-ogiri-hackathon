@@ -3,6 +3,8 @@
 import styles from "../styles.module.css";
 import { useEffect, useState } from "react";
 import { useDepositModel } from "./useDepositModel";
+import PdfClient from "../pdf/PdfClient";
+import { HTLC_CONTRACT_ADDRESS, USDC_BASE_SEPOLIA } from "../_shared";
 
 export default function DepositClient() {
   const [mounted, setMounted] = useState(false);
@@ -14,9 +16,23 @@ export default function DepositClient() {
 
   if (!mounted) return null;
 
+  const hasValidLockId = Boolean(m.lockId && /^\d+$/.test(m.lockId));
+  const pdfDraft = hasValidLockId
+    ? {
+        contractAddress: HTLC_CONTRACT_ADDRESS,
+        lockId: m.lockId,
+        chainName: "Base Sepolia",
+        tokenAddress: USDC_BASE_SEPOLIA,
+        amount: m.amountInput,
+        unlockAtLocal: m.unlockAtLocal,
+        hashlock: m.hashlock,
+      }
+    : null;
+
   return (
     <div className={styles.card}>
       <h1 className={styles.title}>Deposit</h1>
+      <div className={styles.subtitle}>Approve USDC and create a timelocked hashlock.</div>
       <div className={styles.subtitle}>
         <strong>USDC amount</strong>
         <div>How much USDC will be locked in the contract.</div>
@@ -109,6 +125,8 @@ export default function DepositClient() {
           </a>
         </p>
       )}
+
+      <PdfClient variant="step" draft={pdfDraft} readFromStorage={false} />
     </div>
   );
 }

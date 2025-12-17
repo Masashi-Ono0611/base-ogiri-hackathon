@@ -13,6 +13,8 @@ import {
   secretStringToHex,
 } from "../_shared";
 
+ const PDF_DRAFT_STORAGE_KEY = "pdfDraft";
+
 function formatDatetimeLocal(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(
@@ -206,7 +208,25 @@ export function useDepositModel() {
             topics: created.topics,
           });
           if (decoded.eventName === "LockCreated") {
-            setLockId((decoded.args.lockId as bigint).toString());
+            const createdLockId = (decoded.args.lockId as bigint).toString();
+            setLockId(createdLockId);
+
+            try {
+              localStorage.setItem(
+                PDF_DRAFT_STORAGE_KEY,
+                JSON.stringify({
+                  contractAddress: HTLC_CONTRACT_ADDRESS,
+                  lockId: createdLockId,
+                  chainName: "Base Sepolia",
+                  tokenAddress: USDC_BASE_SEPOLIA,
+                  amount: amountInput,
+                  unlockAtLocal,
+                  hashlock,
+                })
+              );
+            } catch {
+              // ignore storage failures
+            }
           }
         } catch {
           setLockId("(created; failed to decode LockCreated)");
@@ -231,21 +251,22 @@ export function useDepositModel() {
     setUnlockAtLocal,
     secretPlain,
     setSecretPlain,
-    autoFillSecret,
+    lockId,
     unlockTime,
     unlockDateText,
     secretHex,
     hashlock,
-    statusDisplay,
-    statusTone,
     isReadyToDeposit,
     isDepositing,
+    autoFillSecret,
     handleDeposit,
-    createTxHash,
-    createTxStage,
-    createExplorerUrl,
+    statusDisplay,
+    statusTone,
     approveTxHash,
     approveTxStage,
+    createTxHash,
+    createTxStage,
     approveExplorerUrl,
+    createExplorerUrl,
   };
 }
