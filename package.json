@@ -27,6 +27,7 @@
     "@farcaster/quick-auth": "^0.0.8",
     "@next/eslint-plugin-next": "^16.0.10",
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@openzeppelin/contracts": "^5.0.2",
     "@react-native-async-storage/async-storage": "^1.24.0",
     "@types/chai": "^4.3.20",
     "@types/node": "^20",

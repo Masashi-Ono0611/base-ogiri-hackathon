@@ -58,7 +58,10 @@ Build a Base Mini App that enables a “grandchild token inheritance” flow usi
     - contract address
     - lock id
   - secret
-- As a claimant, I can claim tokens if conditions are met.
+- As a claimant, I can claim tokens if conditions are met, using a **commit-reveal** flow:
+  - First, I submit a commit transaction that does **not** reveal the secret.
+  - After a minimum delay, I submit a reveal transaction that provides the secret.
+  - This flow must be resilient to mempool observers (front-running resistance).
 
 ## 5. Contract Requirements
 ### 5.1 Contract Type
@@ -73,26 +76,59 @@ A lock should contain:
 - `unlockTime: uint64` (unix timestamp)
 - `claimed: bool`
 
+Commit-reveal (per lock) state should contain:
+- `commitment: bytes32` (single active commitment for the lock)
+- `committer: address` (who committed)
+- `commitBlock: uint64` (block number when committed)
+- `MIN_COMMIT_DELAY_BLOCKS: uint64` (contract constant)
+
 ### 5.3 Core Functions (proposed)
 - `createLock(token, amount, hashlock, unlockTime) returns (lockId)`
   - Requires ERC20 `transferFrom` from depositor.
-- `claim(lockId, secret)`
-  - Validates `keccak256(secret) == hashlock` and `block.timestamp >= unlockTime` and not claimed.
-  - Transfers tokens to `msg.sender` (any caller who knows the secret).
+- `commit(lockId, commitment)`
+  - Stores a single active commitment for the lock.
+  - Must revert if the lock is already claimed.
+  - Must revert if a commitment is already set (or must define a safe overwrite rule).
+- `revealAndClaim(lockId, secret, salt)`
+  - Validates:
+    - `keccak256(secret) == hashlock`
+    - `block.timestamp >= unlockTime`
+    - not claimed
+    - `keccak256(abi.encodePacked(lockId, msg.sender, secret, salt)) == commitment`
+    - `block.number >= commitBlock + MIN_COMMIT_DELAY_BLOCKS`
+  - Transfers tokens to `msg.sender`.
+
+Notes:
+- The contract must not require specifying the claimant wallet at lock time.
+- The contract must remain safe against mempool observers attempting to front-run the reveal.
 
 ### 5.4 Hashing
 - Secret representation (canonical): `bytes` / `bytes32`.
 - Hash: `keccak256(abi.encodePacked(secretBytes))`.
 - App must compute hash **exactly** matching contract.
 
+Commitment hashing (canonical):
+- `commitment = keccak256(abi.encodePacked(lockId, committer, secretBytes, saltBytes))`
+- `committer` is `msg.sender` at reveal time.
+- `saltBytes` must be sufficiently random.
+
 ### 5.5 Events
 - `LockCreated(lockId, depositor, token, amount, hashlock, unlockTime)`
+- `LockCommitted(lockId, committer, commitment, commitBlock)`
 - `LockClaimed(lockId, claimer)`
 
 ### 5.6 Security
 - Reentrancy protection on claim.
 - Validate `unlockTime` in the future on create.
 - Do not store secret on-chain.
+
+Front-running resistance requirements:
+- The secret must not appear on-chain until `revealAndClaim`.
+- A mempool observer who learns the secret from a pending `revealAndClaim` transaction must not be able to steal the claim.
+- This must be enforced by binding reveal to a prior on-chain commitment from the same `msg.sender`, and enforcing a minimum delay.
+
+Operational requirement:
+- The app UX must ensure the commitment transaction is confirmed before sending `revealAndClaim`.
 
 ## 6. App Requirements (Next.js Base Mini App)
 ### 6.1 Screens
@@ -132,10 +168,19 @@ A lock should contain:
   - Signature area
 
 ## 7. Open Questions (to decide before coding)
-- Should claim always transfer to `msg.sender` (current) or should we support an explicit receiver address?
 - Exact Japanese legal text template requirements?
 - How to represent lock identifier in the PDF (lockId vs contract address)?
   - Use `contract address` + `lockId`.
+
+- Commit overwrite policy:
+  - Should `commit(lockId, ...)` be one-time only (recommended)?
+  - Or should it be overwriteable under strict rules?
+- UX:
+  - How many confirmations are required before allowing `revealAndClaim`?
+  - How many blocks should `MIN_COMMIT_DELAY_BLOCKS` be?
+- Transfer target:
+  - Should claim always transfer to `msg.sender`?
+  - Or should we support an explicit receiver address?
 
 ## 8. Acceptance Criteria
 - `pnpm build` passes.
