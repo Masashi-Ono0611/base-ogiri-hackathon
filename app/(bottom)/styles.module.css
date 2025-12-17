@@ -35,6 +35,7 @@
 .content {
   flex: 1;
   padding: 1.25rem;
+  padding-bottom: 6.25rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -166,14 +167,42 @@
 }
 
 .bottomNav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+}
+
+.bottomNavInner {
   width: 100%;
   max-width: 560px;
+  margin: 0 auto;
+  padding: 0 0rem;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottomNavCard {
+  margin: 0.5rem 0;
+  border: 1px solid transparent;
+  background: var(--color-bottom-nav-bg);
+  border-radius: 0;
+  box-shadow: none;
+  opacity: 1;
+}
+
+.bottomNavList {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0;
-  border-top: 1px solid var(--color-border);
-  background: var(--color-overlay);
-  backdrop-filter: blur(12px);
+  height: 56px;
+  align-items: stretch;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.bottomNavItem {
+  display: flex;
 }
 
 .printOnly {
@@ -275,18 +304,31 @@
 
 .navLink {
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-md);
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0;
   text-decoration: none;
-  color: var(--color-text);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: 12px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.navIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.navLink:hover {
+  background: transparent;
 }
 
 .navLinkActive {
-  background: var(--color-primary-surface);
-  border-color: var(--color-primary-surface-border);
   color: var(--color-text);
 }

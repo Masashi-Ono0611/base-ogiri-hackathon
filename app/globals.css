@@ -6,6 +6,7 @@
     --color-background: #ffffff;
     --color-surface: #f6f7fb;
     --color-surface-2: #eef1f9;
+    --color-bottom-nav-bg: #f6f7fb;
     --color-border: rgba(0, 0, 0, 0.12);
     --color-text: #0b0d12;
     --color-text-muted: rgba(11, 13, 18, 0.7);
@@ -36,6 +37,7 @@
       --color-background: #0b0d12;
       --color-surface: rgba(255, 255, 255, 0.06);
       --color-surface-2: rgba(255, 255, 255, 0.09);
+      --color-bottom-nav-bg: #1a1c20;
       --color-border: rgba(255, 255, 255, 0.12);
       --color-text: #f5f7ff;
       --color-text-muted: rgba(245, 247, 255, 0.7);
