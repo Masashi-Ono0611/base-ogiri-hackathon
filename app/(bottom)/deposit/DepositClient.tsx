@@ -7,6 +7,7 @@ import { USDC_BASE_SEPOLIA } from "../../constants/onchain";
 import { useHtlcContractAddress } from "../../hooks/useHtlcContractAddress";
 import PdfClient from "../pdf/PdfClient";
 import { toPrintDocumentData } from "../pdf/usePdfModel";
+import hero from "../../styles/hero.module.css";
 
 export default function DepositClient() {
   const { contractAddress: htlcContractAddress } = useHtlcContractAddress();
@@ -59,115 +60,114 @@ export default function DepositClient() {
   };
 
   return (
-    <div className={styles.card}>
-      <h1 className={styles.title}>Deposit</h1>
-      <div className={styles.subtitle}>Approve USDC and create a timelocked hashlock.</div>
-      <div className={styles.subtitle}>
-        <strong>USDC amount</strong>
-        <div>How much USDC will be locked in the contract.</div>
-      </div>
-      <input
-        className={styles.input}
-        value={m.amountInput}
-        onChange={(e) => m.setAmountInput(e.target.value)}
-        placeholder="USDC amount to lock (e.g. 0.01)"
-      />
+    <div className={hero.hero}>
+      <div className={hero.backdrop} />
+      <div className={`${styles.card} ${hero.card} ${hero.enter}`}>
+        <h1 className={styles.title}>Deposit</h1>
 
-      <div className={styles.subtitle}>
-        <strong>Unlock datetime (local)</strong>
-        <div>Claim becomes available at this time.</div>
-      </div>
-      <input
-        className={styles.input}
-        type="datetime-local"
-        value={m.unlockAtLocal}
-        onChange={(e) => m.setUnlockAtLocal(e.target.value)}
-      />
-
-      <div className={styles.subtitle}>
-        <strong>Secret</strong>
-        <div>
-          Enter any phrase.
-          <br />
-          Required to claim. If leaked, anyone can claim after unlock.
+        <div className={hero.illustration} aria-hidden>
+          <div className={hero.orb} />
+          <div className={`${hero.orb} ${hero.orb2}`} />
         </div>
-      </div>
-      <div className={styles.inputRow}>
+        <div className={styles.subtitle}>
+          <strong>USDC amount</strong>
+        </div>
         <input
-          className={`${styles.input} ${styles.inputGrow}`}
-          value={m.secretPlain}
-          onChange={(e) => m.setSecretPlain(e.target.value)}
-          placeholder="Secret (plain text)"
+          className={styles.input}
+          value={m.amountInput}
+          onChange={(e) => m.setAmountInput(e.target.value)}
+          placeholder="USDC amount to lock (e.g. 0.01)"
         />
-        <button type="button" className={styles.autoButton} onClick={m.autoFillSecret}>
-          Auto
-        </button>
-      </div>
 
-      <details className={styles.subtitle}>
-        <summary>Details</summary>
-        <div>
-          Chain: <span className={styles.mono}>Base Sepolia</span>
+        <div className={styles.subtitle}>
+          <strong>Unlock datetime (local)</strong>
         </div>
-        <div>
-          Token: <span className={styles.mono}>{USDC_BASE_SEPOLIA}</span>
+        <input
+          className={styles.input}
+          type="datetime-local"
+          value={m.unlockAtLocal}
+          onChange={(e) => m.setUnlockAtLocal(e.target.value)}
+        />
+
+        <div className={styles.subtitle}>
+          <strong>Secret</strong>
         </div>
-        <div>
-          Contract: <span className={styles.mono}>{htlcContractAddress || "(loading...)"}</span>
+        <div className={styles.inputRow}>
+          <input
+            className={`${styles.input} ${styles.inputGrow}`}
+            value={m.secretPlain}
+            onChange={(e) => m.setSecretPlain(e.target.value)}
+            placeholder="Secret (plain text)"
+          />
+          <button type="button" className={styles.autoButton} onClick={m.autoFillSecret}>
+            Auto
+          </button>
         </div>
-        <div>
-          Secret bytes: <span className={styles.mono}>{m.secretHex}</span>
-        </div>
-        <div>
-          Hashlock: <span className={styles.mono}>{m.hashlock}</span>
-        </div>
-        <div>
-          UnlockTime: <span className={styles.mono}>{m.unlockTime.toString()}</span>
-        </div>
-        {m.unlockDateText && (
+
+        <details className={styles.subtitle}>
+          <summary>Details</summary>
           <div>
-            Unlock (local time): <span className={styles.mono}>{m.unlockDateText}</span>
+            Chain: <span className={styles.mono}>Base Sepolia</span>
           </div>
+          <div>
+            Token: <span className={styles.mono}>{USDC_BASE_SEPOLIA}</span>
+          </div>
+          <div>
+            Contract: <span className={styles.mono}>{htlcContractAddress || "(loading...)"}</span>
+          </div>
+          <div>
+            Secret bytes: <span className={styles.mono}>{m.secretHex}</span>
+          </div>
+          <div>
+            Hashlock: <span className={styles.mono}>{m.hashlock}</span>
+          </div>
+          <div>
+            UnlockTime: <span className={styles.mono}>{m.unlockTime.toString()}</span>
+          </div>
+          {m.unlockDateText && (
+            <div>
+              Unlock (local time): <span className={styles.mono}>{m.unlockDateText}</span>
+            </div>
+          )}
+        </details>
+
+        <button
+          type="button"
+          className={styles.button}
+          onClick={handlePrimaryCta}
+          disabled={ctaDisabled}
+        >
+          {ctaLabel}
+        </button>
+
+        {m.statusDisplay && (
+          <p className={m.statusTone === "error" ? styles.error : styles.status}>
+            <strong>Status:</strong> {m.statusDisplay}
+          </p>
         )}
 
-      </details>
+        {m.createTxHash && (
+          <p className={styles.status}>
+            <strong>CreateLock Tx:</strong> {m.createTxStage}: {" "}
+            <a href={m.createExplorerUrl} target="_blank" rel="noreferrer">
+              View on explorer
+            </a>
+          </p>
+        )}
 
-      <button
-        type="button"
-        className={styles.button}
-        onClick={handlePrimaryCta}
-        disabled={ctaDisabled}
-      >
-        {ctaLabel}
-      </button>
+        {m.approveTxHash && (
+          <p className={styles.status}>
+            <strong>Approve Tx:</strong> {m.approveTxStage}: {" "}
+            <a href={m.approveExplorerUrl} target="_blank" rel="noreferrer">
+              View on explorer
+            </a>
+          </p>
+        )}
 
-      {m.statusDisplay && (
-        <p className={m.statusTone === "error" ? styles.error : styles.status}>
-          <strong>Status:</strong> {m.statusDisplay}
-        </p>
-      )}
+        {printError && <p className={styles.error}>{printError}</p>}
 
-      {m.createTxHash && (
-        <p className={styles.status}>
-          <strong>CreateLock Tx:</strong> {m.createTxStage}: {" "}
-          <a href={m.createExplorerUrl} target="_blank" rel="noreferrer">
-            View on explorer
-          </a>
-        </p>
-      )}
-
-      {m.approveTxHash && (
-        <p className={styles.status}>
-          <strong>Approve Tx:</strong> {m.approveTxStage}: {" "}
-          <a href={m.approveExplorerUrl} target="_blank" rel="noreferrer">
-            View on explorer
-          </a>
-        </p>
-      )}
-
-      {printError && <p className={styles.error}>{printError}</p>}
-
-      <PdfClient data={printData} />
+        <PdfClient data={printData} />
+      </div>
     </div>
   );
 }

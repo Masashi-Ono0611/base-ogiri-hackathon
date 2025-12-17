@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import bottomStyles from "../styles/bottom.module.css";
 import w from "./walkthrough.module.css";
+import hero from "../styles/hero.module.css";
 
 const ONBOARDING_COOKIE_KEY = "onboarding_version";
 const ONBOARDING_VERSION = "0.1.0";
@@ -22,15 +23,15 @@ export default function WalkthroughClient() {
     () => [
       {
         title: "Create a Deposit",
-        body: "Approve USDC, set the unlock time, and create a timelocked hashlock in one flow.",
+        body: "Approve → Lock",
       },
       {
         title: "Print & Store",
-        body: "Generate a clean PDF and keep it somewhere safe. It contains the details needed later.",
+        body: "Print → Keep safe",
       },
       {
         title: "Claim When Ready",
-        body: "When the unlock time arrives, claim with your secret. Protect it—anyone with it can claim.",
+        body: "Unlock → Claim",
       },
     ],
     [],
@@ -65,10 +66,10 @@ export default function WalkthroughClient() {
   return (
     <div className={bottomStyles.container}>
       <main className={bottomStyles.content}>
-        <div className={w.hero}>
-          <div className={w.backdrop} />
+        <div className={hero.hero}>
+          <div className={hero.backdrop} />
 
-          <div className={`${bottomStyles.card} ${w.card}`}>
+          <div className={`${bottomStyles.card} ${hero.card} ${hero.enter}`}>
             <div className={w.topRow}>
               <div className={w.pill}>
                 <span className={w.spark} />
@@ -80,12 +81,10 @@ export default function WalkthroughClient() {
               </button>
             </div>
 
-            <h1 className={bottomStyles.title} style={{ marginTop: 8 }}>
+            <h1 className={`${bottomStyles.title} ${w.heroTitle}`}>
               {"Token Inheritance"}
             </h1>
-            <div className={bottomStyles.subtitle}>
-              {"A quick walkthrough to help you create a deposit, print the document, and claim safely later."}
-            </div>
+            <div className={`${bottomStyles.subtitle} ${w.heroSubtitle}`}>{"3 steps."}</div>
 
             <div className={w.progress}>
               <div className={w.progressBar} aria-hidden>
@@ -94,22 +93,15 @@ export default function WalkthroughClient() {
               <div className={w.progressLabel}>{`Step ${index + 1}/${steps.length}`}</div>
             </div>
 
-            <div className={w.illustration} aria-hidden>
-              <div className={w.grid} />
-              <div className={w.orb} />
-              <div className={`${w.orb} ${w.orb2}`} />
+            <div className={hero.illustration} aria-hidden>
+              <div className={hero.orb} />
+              <div className={`${hero.orb} ${hero.orb2}`} />
             </div>
 
-            <div key={stepKey} className={w.stepEnter}>
-              <div className={bottomStyles.subtitle} style={{ marginTop: 10 }}>
-                {`Step ${index + 1}`}
-              </div>
-              <h2 className={bottomStyles.title} style={{ fontSize: 20, marginTop: 6 }}>
-                {steps[index].title}
-              </h2>
-              <p className={bottomStyles.subtitle} style={{ fontSize: 14, marginTop: 10 }}>
-                {steps[index].body}
-              </p>
+            <div key={stepKey} className={hero.enter}>
+              <div className={`${bottomStyles.subtitle} ${w.stepMeta}`}>{`Step ${index + 1}`}</div>
+              <h2 className={`${bottomStyles.title} ${w.stepTitle}`}>{steps[index].title}</h2>
+              <p className={`${bottomStyles.subtitle} ${w.stepBody}`}>{steps[index].body}</p>
             </div>
 
             <div className={w.actions}>
