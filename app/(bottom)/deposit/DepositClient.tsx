@@ -3,8 +3,8 @@
 import styles from "../styles.module.css";
 import { useMemo, useState } from "react";
 import { useDepositModel } from "./useDepositModel";
-import { USDC_BASE_SEPOLIA } from "../_shared";
-import { useHtlcContractAddress } from "../useHtlcContractAddress";
+import { USDC_BASE_SEPOLIA } from "../../constants/onchain";
+import { useHtlcContractAddress } from "../../hooks/useHtlcContractAddress";
 import PdfClient from "../pdf/PdfClient";
 import { toPrintDocumentData } from "../pdf/usePdfModel";
 

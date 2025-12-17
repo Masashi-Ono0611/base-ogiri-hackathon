@@ -1,8 +1,5 @@
 import { toHex, type Abi, type Hex } from "viem";
 
-export const USDC_BASE_SEPOLIA = "0x036CbD53842c5426634e7929541eC2318f3dCF7e" as const;
-export const USDC_DECIMALS = 6;
-
 export const erc20Abi = [
   {
     type: "function",

@@ -3,9 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { decodeEventLog, keccak256, parseUnits, type Hex, type Log } from "viem";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
+import { BASE_SEPOLIA_EXPLORER_BASE_URL, USDC_BASE_SEPOLIA, USDC_DECIMALS } from "../../constants/onchain";
 import {
-  USDC_BASE_SEPOLIA,
-  USDC_DECIMALS,
   erc20Abi,
   generateHumanSecret,
   htlcAbi,
@@ -56,8 +55,8 @@ export function useDepositModel({ htlcContractAddress }: Params) {
   const [createTxHash, setCreateTxHash] = useState<`0x${string}` | "">("");
   const [createTxStage, setCreateTxStage] = useState<TxStage>("broadcast complete");
 
-  const approveExplorerUrl = approveTxHash ? `https://sepolia.basescan.org/tx/${approveTxHash}` : "";
-  const createExplorerUrl = createTxHash ? `https://sepolia.basescan.org/tx/${createTxHash}` : "";
+  const approveExplorerUrl = approveTxHash ? `${BASE_SEPOLIA_EXPLORER_BASE_URL}/tx/${approveTxHash}` : "";
+  const createExplorerUrl = createTxHash ? `${BASE_SEPOLIA_EXPLORER_BASE_URL}/tx/${createTxHash}` : "";
 
   const secretHex = useMemo(() => secretStringToHex(secretPlain), [secretPlain]);
   const hashlock = useMemo(() => {

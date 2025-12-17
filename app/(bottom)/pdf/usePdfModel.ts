@@ -1,6 +1,6 @@
 "use client";
 
-import { USDC_BASE_SEPOLIA } from "../_shared";
+import { USDC_BASE_SEPOLIA } from "../../constants/onchain";
 import { type PrintDocumentData } from "./PrintDocument";
 
 export type PdfDraft = {

@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import { encodePacked, keccak256, type Hex } from "viem";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
+import { BASE_SEPOLIA_EXPLORER_BASE_URL } from "../../constants/onchain";
 import { htlcAbi, randomHex, secretStringToHex } from "../_shared";
-import { useHtlcContractAddress } from "../useHtlcContractAddress";
+import { useHtlcContractAddress } from "../../hooks/useHtlcContractAddress";
 
 type StatusTone = "error" | "status";
 
@@ -30,7 +31,7 @@ export function useClaimModel() {
   const [txHash, setTxHash] = useState<`0x${string}` | "">("");
   const [txStage, setTxStage] = useState<TxStage>("broadcast complete");
 
-  const explorerUrl = txHash ? `https://sepolia.basescan.org/tx/${txHash}` : "";
+  const explorerUrl = txHash ? `${BASE_SEPOLIA_EXPLORER_BASE_URL}/tx/${txHash}` : "";
 
   const preflightError = useMemo(() => {
     if (isClaiming) return "";

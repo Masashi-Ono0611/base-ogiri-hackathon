@@ -7,7 +7,8 @@ import { sdk } from "@farcaster/miniapp-sdk";
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
 import styles from "./styles.module.css";
-import { useHtlcContractAddress } from "./useHtlcContractAddress";
+import { BASE_SEPOLIA_CHAIN_ID } from "../constants/onchain";
+import { useHtlcContractAddress } from "../hooks/useHtlcContractAddress";
 import { MiniAppDebug } from "./MiniAppDebug";
 import { AppHeader } from "./AppHeader";
 import { BottomNav } from "./BottomNav";
@@ -28,7 +29,7 @@ export function BottomLayoutClient({ children }: { children: React.ReactNode }) 
   const [miniAppChains, setMiniAppChains] = useState<string[]>([]);
   const [miniAppSdkError, setMiniAppSdkError] = useState<string>("");
 
-  const targetChainId = baseSepolia.id;
+  const targetChainId = BASE_SEPOLIA_CHAIN_ID;
   const isWrongNetwork = useMemo(() => {
     if (!isConnected) return false;
     return chainId !== targetChainId;
