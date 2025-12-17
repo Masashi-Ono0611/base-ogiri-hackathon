@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { sdk } from "@farcaster/miniapp-sdk";
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
-import { baseSepolia } from "wagmi/chains";
 import styles from "./styles.module.css";
 import { BASE_SEPOLIA_CHAIN_ID } from "../constants/onchain";
 import { useHtlcContractAddress } from "../hooks/useHtlcContractAddress";
@@ -96,7 +95,7 @@ export function BottomLayoutClient({ children }: { children: React.ReactNode }) 
   const isDeposit = pathname === "/deposit";
   const isClaim = pathname === "/claim";
 
-  const showMiniAppDebug = process.env.NEXT_PUBLIC_MINIAPP_DEBUG === "true";
+  const showMiniAppDebug = false; // Todo: remove MiniAppDebug for production
 
   return (
     <div className={styles.container}>
