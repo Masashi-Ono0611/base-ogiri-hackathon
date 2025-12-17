@@ -104,6 +104,7 @@ A lock should contain:
   - Lock details are auto-filled from the deposit transaction.
   - Names/signature/date are handwritten after printing.
   - Button: print / save as PDF.
+  - Prefer a single primary CTA on the Deposit page that switches from "Approve + Create Lock" to "Print document (PDF)" after lock creation.
 - **Claim screen**
   - Inputs: lockId, secret.
   - Button: claim.

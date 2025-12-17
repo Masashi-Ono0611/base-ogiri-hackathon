@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useDepositModel } from "./useDepositModel";
 import PdfClient from "../pdf/PdfClient";
 import { HTLC_CONTRACT_ADDRESS, USDC_BASE_SEPOLIA } from "../_shared";
+import { usePdfModel } from "../pdf/usePdfModel";
 
 export default function DepositClient() {
   const [mounted, setMounted] = useState(false);
@@ -13,8 +14,6 @@ export default function DepositClient() {
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  if (!mounted) return null;
 
   const hasValidLockId = Boolean(m.lockId && /^\d+$/.test(m.lockId));
   const pdfDraft = hasValidLockId
@@ -28,6 +27,17 @@ export default function DepositClient() {
         hashlock: m.hashlock,
       }
     : null;
+
+  const pdf = usePdfModel({ draft: pdfDraft, readFromStorage: false });
+
+  if (!mounted) return null;
+
+  const ctaDisabled = hasValidLockId ? !pdf.isReadyToPrint : !m.isReadyToDeposit || m.isDepositing;
+  const ctaLabel = hasValidLockId
+    ? "Print document (PDF)"
+    : m.isDepositing
+      ? "Processing..."
+      : "Approve + Create Lock";
 
   return (
     <div className={styles.card}>
@@ -96,10 +106,10 @@ export default function DepositClient() {
       <button
         type="button"
         className={styles.button}
-        onClick={m.handleDeposit}
-        disabled={!m.isReadyToDeposit || m.isDepositing}
+        onClick={hasValidLockId ? pdf.handlePrint : m.handleDeposit}
+        disabled={ctaDisabled}
       >
-        {m.isDepositing ? "Processing..." : "Approve + Create Lock"}
+        {ctaLabel}
       </button>
 
       {m.statusDisplay && (
@@ -126,7 +136,11 @@ export default function DepositClient() {
         </p>
       )}
 
-      <PdfClient variant="step" draft={pdfDraft} readFromStorage={false} />
+      {pdf.statusDisplay && (
+        <p className={pdf.statusTone === "error" ? styles.error : styles.status}>{pdf.statusDisplay}</p>
+      )}
+
+      <PdfClient variant="document" draft={pdfDraft} readFromStorage={false} />
     </div>
   );
 }
