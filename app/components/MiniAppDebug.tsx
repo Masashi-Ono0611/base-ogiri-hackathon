@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "./styles.module.css";
+import styles from "../styles/bottom.module.css";
 
 type Props = {
   show: boolean;

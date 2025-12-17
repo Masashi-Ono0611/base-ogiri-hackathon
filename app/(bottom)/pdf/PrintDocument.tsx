@@ -1,4 +1,4 @@
-import styles from "../styles.module.css";
+import styles from "../../styles/bottom.module.css";
 
 export type PrintDocumentData = {
   documentTitle: string;
