@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import styles from "../styles/bottom.module.css";
+import bottomStyles from "../styles/bottom.module.css";
+import w from "./walkthrough.module.css";
 
 const ONBOARDING_COOKIE_KEY = "onboarding_version";
 const ONBOARDING_VERSION = "0.1.0";
@@ -20,27 +21,30 @@ export default function WalkthroughClient() {
   const steps = useMemo(
     () => [
       {
-        title: "Deposit",
-        body: "Create a time-locked deposit and generate a printable PDF document.",
+        title: "Create a Deposit",
+        body: "Approve USDC, set the unlock time, and create a timelocked hashlock in one flow.",
       },
       {
-        title: "Print",
-        body: "After creating a lock, print the PDF and store it safely.",
+        title: "Print & Store",
+        body: "Generate a clean PDF and keep it somewhere safe. It contains the details needed later.",
       },
       {
-        title: "Claim",
-        body: "Later, claim the deposit using the lock information.",
+        title: "Claim When Ready",
+        body: "When the unlock time arrives, claim with your secret. Protect it—anyone with it can claim.",
       },
     ],
     [],
   );
 
   const [index, setIndex] = useState(0);
+  const [stepKey, setStepKey] = useState(0);
   const isLast = index === steps.length - 1;
+  const progressPct = Math.round(((index + 1) / steps.length) * 100);
 
   const goNext = () => {
     if (!isLast) {
       setIndex((v) => Math.min(v + 1, steps.length - 1));
+      setStepKey((v) => v + 1);
       return;
     }
 
@@ -55,69 +59,74 @@ export default function WalkthroughClient() {
 
   const goBack = () => {
     setIndex((v) => Math.max(v - 1, 0));
+    setStepKey((v) => v + 1);
   };
 
   return (
-    <div className={styles.container}>
-      <main className={styles.content}>
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <button
-            type="button"
-            onClick={goSkip}
-            style={{
-              background: "transparent",
-              border: "1px solid rgba(255,255,255,0.2)",
-              padding: "8px 12px",
-              borderRadius: 8,
-              cursor: "pointer",
-              color: "inherit",
-            }}
-          >
-            Skip
-          </button>
-        </div>
+    <div className={bottomStyles.container}>
+      <main className={bottomStyles.content}>
+        <div className={w.hero}>
+          <div className={w.backdrop} />
 
-        <div style={{ marginTop: 24 }}>
-          <div style={{ opacity: 0.7, fontSize: 14 }}>{`Step ${index + 1} / ${steps.length}`}</div>
-          <h1 style={{ marginTop: 10, fontSize: 24 }}>{steps[index].title}</h1>
-          <p style={{ marginTop: 12, lineHeight: 1.6, opacity: 0.9 }}>{steps[index].body}</p>
-        </div>
+          <div className={`${bottomStyles.card} ${w.card}`}>
+            <div className={w.topRow}>
+              <div className={w.pill}>
+                <span className={w.spark} />
+                <span>{"Welcome"}</span>
+              </div>
 
-        <div style={{ display: "flex", gap: 10, marginTop: 28 }}>
-          <button
-            type="button"
-            onClick={goBack}
-            disabled={index === 0}
-            style={{
-              flex: 1,
-              background: "transparent",
-              border: "1px solid rgba(255,255,255,0.2)",
-              padding: "12px 14px",
-              borderRadius: 10,
-              cursor: index === 0 ? "not-allowed" : "pointer",
-              color: "inherit",
-              opacity: index === 0 ? 0.4 : 1,
-            }}
-          >
-            Back
-          </button>
+              <button type="button" className={bottomStyles.autoButton} onClick={goSkip}>
+                Skip
+              </button>
+            </div>
 
-          <button
-            type="button"
-            onClick={goNext}
-            style={{
-              flex: 2,
-              background: "rgba(255,255,255,0.12)",
-              border: "1px solid rgba(255,255,255,0.2)",
-              padding: "12px 14px",
-              borderRadius: 10,
-              cursor: "pointer",
-              color: "inherit",
-              fontWeight: 600,
-            }}
-          >
-            {isLast ? "Start" : "Next"}
-          </button>
+            <h1 className={bottomStyles.title} style={{ marginTop: 8 }}>
+              {"Token Inheritance"}
+            </h1>
+            <div className={bottomStyles.subtitle}>
+              {"A quick walkthrough to help you create a deposit, print the document, and claim safely later."}
+            </div>
+
+            <div className={w.progress}>
+              <div className={w.progressBar} aria-hidden>
+                <div className={w.progressFill} style={{ width: `${progressPct}%` }} />
+              </div>
+              <div className={w.progressLabel}>{`Step ${index + 1}/${steps.length}`}</div>
+            </div>
+
+            <div className={w.illustration} aria-hidden>
+              <div className={w.grid} />
+              <div className={w.orb} />
+              <div className={`${w.orb} ${w.orb2}`} />
+            </div>
+
+            <div key={stepKey} className={w.stepEnter}>
+              <div className={bottomStyles.subtitle} style={{ marginTop: 10 }}>
+                {`Step ${index + 1}`}
+              </div>
+              <h2 className={bottomStyles.title} style={{ fontSize: 20, marginTop: 6 }}>
+                {steps[index].title}
+              </h2>
+              <p className={bottomStyles.subtitle} style={{ fontSize: 14, marginTop: 10 }}>
+                {steps[index].body}
+              </p>
+            </div>
+
+            <div className={w.actions}>
+              <button
+                type="button"
+                className={`${bottomStyles.button} ${w.secondary}`}
+                onClick={goBack}
+                disabled={index === 0}
+              >
+                Back
+              </button>
+
+              <button type="button" className={bottomStyles.button} onClick={goNext}>
+                {isLast ? "Start" : "Next"}
+              </button>
+            </div>
+          </div>
         </div>
       </main>
     </div>

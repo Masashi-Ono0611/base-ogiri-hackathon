@@ -1,0 +1,185 @@
+.hero {
+  width: 100%;
+  max-width: 560px;
+  position: relative;
+}
+
+.backdrop {
+  position: absolute;
+  inset: -24px -18px;
+  background:
+    radial-gradient(700px circle at 10% 0%, rgba(120, 119, 255, 0.24), transparent 55%),
+    radial-gradient(700px circle at 100% 20%, rgba(0, 209, 255, 0.22), transparent 52%),
+    radial-gradient(700px circle at 20% 90%, rgba(255, 141, 230, 0.18), transparent 50%);
+  filter: blur(2px);
+  pointer-events: none;
+  border-radius: 28px;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 45%, rgba(255, 255, 255, 0.04));
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.spark {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 30%, #fff, rgba(255, 255, 255, 0.1));
+  box-shadow: 0 0 18px rgba(120, 119, 255, 0.5), 0 0 28px rgba(0, 209, 255, 0.35);
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.progressBar {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(120, 119, 255, 1), rgba(0, 209, 255, 1));
+  transition: width 300ms ease;
+}
+
+.progressLabel {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.illustration {
+  margin-top: 14px;
+  width: 100%;
+  min-height: 120px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(600px circle at 30% 30%, rgba(120, 119, 255, 0.22), transparent 55%),
+    radial-gradient(600px circle at 80% 20%, rgba(0, 209, 255, 0.18), transparent 45%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
+  position: relative;
+  overflow: hidden;
+}
+
+.orb {
+  position: absolute;
+  inset: auto;
+  width: 140px;
+  height: 140px;
+  border-radius: 999px;
+  left: -30px;
+  top: -40px;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(120, 119, 255, 0.18), rgba(0, 209, 255, 0));
+  filter: blur(0.4px);
+  animation: float 6s ease-in-out infinite;
+}
+
+.orb2 {
+  width: 160px;
+  height: 160px;
+  right: -45px;
+  bottom: -65px;
+  left: auto;
+  top: auto;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.65), rgba(255, 141, 230, 0.16), rgba(0, 209, 255, 0));
+  animation-delay: -1.5s;
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 26px 26px;
+  opacity: 0.16;
+  mask-image: radial-gradient(280px circle at 35% 35%, #000 20%, transparent 65%);
+}
+
+.stepEnter {
+  animation: stepEnter 320ms ease;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.secondary {
+  background: transparent;
+  border: 1px solid var(--color-border);
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, 10px, 0);
+  }
+}
+
+@keyframes stepEnter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .orb {
+    animation: none;
+  }
+
+  .stepEnter {
+    animation: none;
+  }
+
+  .progressFill {
+    transition: none;
+  }
+}
