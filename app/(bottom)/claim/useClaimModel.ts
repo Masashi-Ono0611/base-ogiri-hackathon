@@ -1,20 +1,28 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { encodePacked, keccak256, type Hex } from "viem";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
-import { HTLC_CONTRACT_ADDRESS, htlcAbi, secretStringToHex } from "../_shared";
+import { BASE_SEPOLIA_EXPLORER_BASE_URL } from "../../constants/onchain";
+import { htlcAbi, randomHex, secretStringToHex } from "../_shared";
+import { useHtlcContractAddress } from "../../hooks/useHtlcContractAddress";
 
 type StatusTone = "error" | "status";
 
 type TxStage = "broadcast complete" | "included in a block";
 
 export function useClaimModel() {
-  const { isConnected } = useAccount();
+  const { isConnected, address } = useAccount();
   const publicClient = usePublicClient();
   const { writeContractAsync } = useWriteContract();
 
+  const { contractAddress: htlcContractAddress } = useHtlcContractAddress();
+
   const [claimLockId, setClaimLockId] = useState<string>("");
   const [claimSecretPlain, setClaimSecretPlain] = useState<string>("");
+
+  const [saltHex, setSaltHex] = useState<Hex>("0x" as Hex);
+  const [commitBlockNumber, setCommitBlockNumber] = useState<bigint | null>(null);
 
   const [status, setStatus] = useState<string>("");
   const [statusIsError, setStatusIsError] = useState(false);
@@ -23,12 +31,13 @@ export function useClaimModel() {
   const [txHash, setTxHash] = useState<`0x${string}` | "">("");
   const [txStage, setTxStage] = useState<TxStage>("broadcast complete");
 
-  const explorerUrl = txHash ? `https://sepolia.basescan.org/tx/${txHash}` : "";
+  const explorerUrl = txHash ? `${BASE_SEPOLIA_EXPLORER_BASE_URL}/tx/${txHash}` : "";
 
   const preflightError = useMemo(() => {
     if (isClaiming) return "";
     if (!isConnected) return "Connect your wallet first.";
     if (!publicClient) return "Public client not available.";
+    if (!htlcContractAddress) return "Contract address not available.";
     if (!claimLockId.trim()) return "LockId is required.";
     try {
       BigInt(claimLockId);
@@ -37,7 +46,7 @@ export function useClaimModel() {
     }
     if (!claimSecretPlain.trim()) return "Secret is required.";
     return "";
-  }, [isClaiming, isConnected, publicClient, claimLockId, claimSecretPlain]);
+  }, [isClaiming, isConnected, publicClient, htlcContractAddress, claimLockId, claimSecretPlain]);
 
   const statusDisplay = useMemo(() => {
     if (status) return status;
@@ -53,6 +62,7 @@ export function useClaimModel() {
   const isReadyToClaim = useMemo(() => {
     if (!isConnected) return false;
     if (!publicClient) return false;
+    if (!htlcContractAddress) return false;
     if (!claimLockId.trim()) return false;
     if (!claimSecretPlain.trim()) return false;
     try {
@@ -61,65 +71,155 @@ export function useClaimModel() {
       return false;
     }
     return true;
-  }, [isConnected, publicClient, claimLockId, claimSecretPlain]);
+  }, [isConnected, publicClient, htlcContractAddress, claimLockId, claimSecretPlain]);
 
-  async function handleClaim() {
+  const lockIdBigInt = useMemo(() => {
+    try {
+      return BigInt(claimLockId);
+    } catch {
+      return null;
+    }
+  }, [claimLockId]);
+
+  const canReveal = useMemo(() => {
+    if (!commitBlockNumber) return false;
+    if (!saltHex || saltHex === ("0x" as Hex)) return false;
+    if (!isReadyToClaim) return false;
+    return true;
+  }, [commitBlockNumber, saltHex, isReadyToClaim]);
+
+  async function loadTimelockInfo(id: bigint) {
+    if (!publicClient || !htlcContractAddress) throw new Error("Client not available.");
+    const lock = (await publicClient.readContract({
+      address: htlcContractAddress,
+      abi: htlcAbi,
+      functionName: "getLock",
+      args: [id],
+    })) as any;
+    const unlockTime = BigInt(lock.unlockTime);
+    const latest = await publicClient.getBlock();
+    const now = BigInt(latest.timestamp);
+    return { unlockTime, now, claimed: Boolean(lock.claimed) };
+  }
+
+  async function handleCommit() {
     if (isClaiming) return;
+    if (!isReadyToClaim) return;
+    if (!lockIdBigInt) return;
+    if (!htlcContractAddress) return;
+    if (!address) return;
 
     setStatus("");
     setStatusIsError(false);
     setTxHash("");
 
-    if (!isConnected) {
-      setStatus("Connect your wallet first.");
-      setStatusIsError(true);
-      return;
-    }
-    if (!publicClient) {
-      setStatus("Public client not available.");
-      setStatusIsError(true);
-      return;
-    }
-    if (!claimSecretPlain.trim()) {
-      setStatus("Secret is required.");
-      setStatusIsError(true);
-      return;
-    }
-    if (!claimLockId.trim()) {
-      setStatus("LockId is required.");
-      setStatusIsError(true);
-      return;
-    }
-
-    let id: bigint;
+    setIsClaiming(true);
     try {
-      id = BigInt(claimLockId);
-    } catch {
-      setStatus("LockId must be an integer.");
+      const info = await loadTimelockInfo(lockIdBigInt);
+      if (info.claimed) {
+        setStatus("This lock is already claimed.");
+        setStatusIsError(true);
+        return;
+      }
+      if (info.now < info.unlockTime) {
+        setStatus(`Timelock not expired yet. UnlockTime: ${info.unlockTime.toString()}`);
+        setStatusIsError(true);
+        return;
+      }
+
+      const generatedSalt = randomHex(32);
+      setSaltHex(generatedSalt);
+
+      const secretHex = secretStringToHex(claimSecretPlain);
+      const commitment = keccak256(
+        encodePacked(["uint256", "address", "bytes", "bytes"], [lockIdBigInt, address, secretHex, generatedSalt])
+      );
+
+      setStatus("Submitting commit...");
+      setStatusIsError(false);
+
+      const hash = await writeContractAsync({
+        address: htlcContractAddress,
+        abi: htlcAbi,
+        functionName: "commit",
+        args: [lockIdBigInt, commitment],
+      });
+      setTxHash(hash);
+      setTxStage("broadcast complete");
+      setStatus("Commit broadcast complete.");
+      setStatusIsError(false);
+
+      const receipt = await publicClient!.waitForTransactionReceipt({ hash });
+      setCommitBlockNumber(receipt.blockNumber);
+      setTxStage("included in a block");
+      setStatus("Commit included in a block.");
+      setStatusIsError(false);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setStatus(msg);
       setStatusIsError(true);
-      return;
+    } finally {
+      setIsClaiming(false);
     }
+  }
+
+  async function handleRevealAndClaim() {
+    if (isClaiming) return;
+    if (!canReveal) return;
+    if (!lockIdBigInt) return;
+    if (!htlcContractAddress) return;
+
+    setStatus("");
+    setStatusIsError(false);
+    setTxHash("");
 
     setIsClaiming(true);
     try {
-      setStatus("Submitting transaction...");
+      const info = await loadTimelockInfo(lockIdBigInt);
+      if (info.claimed) {
+        setStatus("This lock is already claimed.");
+        setStatusIsError(true);
+        return;
+      }
+      if (info.now < info.unlockTime) {
+        setStatus(`Timelock not expired yet. UnlockTime: ${info.unlockTime.toString()}`);
+        setStatusIsError(true);
+        return;
+      }
+
+      const minDelay = (await publicClient!.readContract({
+        address: htlcContractAddress,
+        abi: htlcAbi,
+        functionName: "MIN_COMMIT_DELAY_BLOCKS",
+      })) as bigint;
+
+      const target = commitBlockNumber! + minDelay;
+      while (true) {
+        const current = await publicClient!.getBlockNumber();
+        if (current >= target) break;
+        setStatus(`Waiting for commit delay... currentBlock=${current.toString()} targetBlock=${target.toString()}`);
+        setStatusIsError(false);
+        await new Promise((r) => setTimeout(r, 3_000));
+      }
+
+      setStatus("Submitting reveal...");
       setStatusIsError(false);
 
       const secretHex = secretStringToHex(claimSecretPlain);
       const hash = await writeContractAsync({
-        address: HTLC_CONTRACT_ADDRESS,
+        address: htlcContractAddress,
         abi: htlcAbi,
-        functionName: "claim",
-        args: [id, secretHex],
+        functionName: "revealAndClaim",
+        args: [lockIdBigInt, secretHex, saltHex],
       });
       setTxHash(hash);
       setTxStage("broadcast complete");
-      setStatus("Tx broadcast complete.");
+      setStatus("Reveal broadcast complete.");
       setStatusIsError(false);
 
-      await publicClient.waitForTransactionReceipt({ hash });
+      await publicClient!.waitForTransactionReceipt({ hash });
       setTxStage("included in a block");
-      setStatus("Tx included in a block.");
+      setStatus("Claim included in a block.");
       setStatusIsError(false);
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -135,11 +235,15 @@ export function useClaimModel() {
     setClaimLockId,
     claimSecretPlain,
     setClaimSecretPlain,
+    saltHex,
+    commitBlockNumber,
     statusDisplay,
     statusTone,
     isReadyToClaim,
     isClaiming,
-    handleClaim,
+    handleCommit,
+    handleRevealAndClaim,
+    canReveal,
     txHash,
     txStage,
     explorerUrl,

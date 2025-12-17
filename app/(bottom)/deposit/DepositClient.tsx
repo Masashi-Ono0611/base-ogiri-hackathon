@@ -3,12 +3,14 @@
 import styles from "../styles.module.css";
 import { useMemo, useState } from "react";
 import { useDepositModel } from "./useDepositModel";
-import { HTLC_CONTRACT_ADDRESS, USDC_BASE_SEPOLIA } from "../_shared";
+import { USDC_BASE_SEPOLIA } from "../../constants/onchain";
+import { useHtlcContractAddress } from "../../hooks/useHtlcContractAddress";
 import PdfClient from "../pdf/PdfClient";
 import { toPrintDocumentData } from "../pdf/usePdfModel";
 
 export default function DepositClient() {
-  const m = useDepositModel();
+  const { contractAddress: htlcContractAddress } = useHtlcContractAddress();
+  const m = useDepositModel({ htlcContractAddress });
   const [printError, setPrintError] = useState<string>("");
 
   const hasPrintableLock = useMemo(() => {
@@ -19,7 +21,7 @@ export default function DepositClient() {
   const pdfDraft = useMemo(() => {
     if (!hasPrintableLock || !m.createdLock) return null;
     return {
-      contractAddress: HTLC_CONTRACT_ADDRESS,
+      contractAddress: htlcContractAddress,
       lockId: m.createdLock.lockId,
       chainName: "Base Sepolia",
       tokenAddress: USDC_BASE_SEPOLIA,
@@ -27,7 +29,7 @@ export default function DepositClient() {
       unlockAtLocal: m.createdLock.unlockAtLocal,
       hashlock: m.createdLock.hashlock,
     };
-  }, [hasPrintableLock, m.createdLock]);
+  }, [hasPrintableLock, m.createdLock, htlcContractAddress]);
 
   const printData = useMemo(() => {
     if (!pdfDraft) return null;

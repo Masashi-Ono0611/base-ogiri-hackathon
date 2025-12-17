@@ -1,26 +1,22 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import { sdk } from "@farcaster/miniapp-sdk";
-import {
-  ConnectWallet,
-  Wallet,
-  WalletDropdown,
-  WalletDropdownDisconnect,
-} from "@coinbase/onchainkit/wallet";
-import { Address, Avatar, EthBalance, Identity, Name } from "@coinbase/onchainkit/identity";
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
-import { baseSepolia } from "wagmi/chains";
 import styles from "./styles.module.css";
-import { HTLC_CONTRACT_ADDRESS } from "./_shared";
+import { BASE_SEPOLIA_CHAIN_ID } from "../constants/onchain";
+import { useHtlcContractAddress } from "../hooks/useHtlcContractAddress";
 import { MiniAppDebug } from "./MiniAppDebug";
+import { AppHeader } from "./AppHeader";
+import { BottomNav } from "./BottomNav";
 
 export function BottomLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isFrameReady, setFrameReady } = useMiniKit();
+
+  const { contractAddress: htlcContractAddress } = useHtlcContractAddress();
 
   const { isConnected } = useAccount();
   const chainId = useChainId();
@@ -32,7 +28,7 @@ export function BottomLayoutClient({ children }: { children: React.ReactNode }) 
   const [miniAppChains, setMiniAppChains] = useState<string[]>([]);
   const [miniAppSdkError, setMiniAppSdkError] = useState<string>("");
 
-  const targetChainId = baseSepolia.id;
+  const targetChainId = BASE_SEPOLIA_CHAIN_ID;
   const isWrongNetwork = useMemo(() => {
     if (!isConnected) return false;
     return chainId !== targetChainId;
@@ -99,35 +95,11 @@ export function BottomLayoutClient({ children }: { children: React.ReactNode }) 
   const isDeposit = pathname === "/deposit";
   const isClaim = pathname === "/claim";
 
-  const showMiniAppDebug = process.env.NEXT_PUBLIC_MINIAPP_DEBUG === "true";
+  const showMiniAppDebug = false; // Todo: remove MiniAppDebug for production
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <div className={styles.brand}>
-          <div className={styles.brandTitle}>Token Inheritance</div>
-          <div className={styles.brandSubtitle}>
-            Base Sepolia / USDC / HTLC
-            <span className={styles.mono}> {HTLC_CONTRACT_ADDRESS}</span>
-          </div>
-        </div>
-
-        <Wallet>
-          <ConnectWallet disconnectedLabel="Connect" className={styles.button}>
-            <Avatar className="h-6 w-6" />
-            <Name />
-          </ConnectWallet>
-          <WalletDropdown>
-            <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
-              <Avatar />
-              <Name />
-              <Address />
-              <EthBalance />
-            </Identity>
-            <WalletDropdownDisconnect />
-          </WalletDropdown>
-        </Wallet>
-      </header>
+      <AppHeader contractAddress={htlcContractAddress || "(loading...)"} />
 
       {isWrongNetwork && (
         <div className={styles.alert}>
@@ -165,20 +137,7 @@ export function BottomLayoutClient({ children }: { children: React.ReactNode }) 
         miniAppSdkError={miniAppSdkError}
       />
 
-      <nav className={styles.bottomNav}>
-        <Link
-          href="/deposit"
-          className={`${styles.navLink} ${isDeposit ? styles.navLinkActive : ""}`}
-        >
-          Deposit
-        </Link>
-        <Link
-          href="/claim"
-          className={`${styles.navLink} ${isClaim ? styles.navLinkActive : ""}`}
-        >
-          Claim
-        </Link>
-      </nav>
+      <BottomNav isDeposit={isDeposit} isClaim={isClaim} />
     </div>
   );
 }

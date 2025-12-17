@@ -8,6 +8,8 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 contract InheritanceHTLCTimelock is ReentrancyGuard {
   using SafeERC20 for IERC20;
 
+  uint64 public constant MIN_COMMIT_DELAY_BLOCKS = 3;
+
   struct Lock {
     address depositor;
     address token;
@@ -17,12 +19,23 @@ contract InheritanceHTLCTimelock is ReentrancyGuard {
     bool claimed;
   }
 
+  struct CommitState {
+    bytes32 commitment;
+    address committer;
+    uint64 commitBlock;
+  }
+
   error InvalidAmount();
   error InvalidUnlockTime();
   error LockNotFound();
   error LockAlreadyClaimed();
   error TimelockNotExpired();
   error InvalidSecret();
+  error CommitmentAlreadySet();
+  error CommitmentNotFound();
+  error CommitDelayNotElapsed();
+  error CommitterMismatch();
+  error InvalidCommitment();
 
   event LockCreated(
     uint256 indexed lockId,
@@ -33,10 +46,13 @@ contract InheritanceHTLCTimelock is ReentrancyGuard {
     uint64 unlockTime
   );
 
+  event LockCommitted(uint256 indexed lockId, address indexed committer, bytes32 commitment, uint64 commitBlock);
+
   event LockClaimed(uint256 indexed lockId, address indexed claimer);
 
   uint256 private _nextLockId = 1;
   mapping(uint256 => Lock) private _locks;
+  mapping(uint256 => CommitState) private _commits;
 
   function getLock(uint256 lockId) external view returns (Lock memory) {
     Lock memory l = _locks[lockId];
@@ -69,16 +85,40 @@ contract InheritanceHTLCTimelock is ReentrancyGuard {
     emit LockCreated(lockId, msg.sender, token, amount, hashlock, unlockTime);
   }
 
-  function claim(uint256 lockId, bytes calldata secret) external nonReentrant {
+  function commit(uint256 lockId, bytes32 commitment) external {
+    Lock storage l = _locks[lockId];
+    if (l.depositor == address(0)) revert LockNotFound();
+    if (l.claimed) revert LockAlreadyClaimed();
+
+    CommitState storage c = _commits[lockId];
+    if (c.commitment != bytes32(0)) revert CommitmentAlreadySet();
+
+    c.commitment = commitment;
+    c.committer = msg.sender;
+    c.commitBlock = uint64(block.number);
+
+    emit LockCommitted(lockId, msg.sender, commitment, c.commitBlock);
+  }
+
+  function revealAndClaim(uint256 lockId, bytes calldata secret, bytes calldata salt) external nonReentrant {
     Lock storage l = _locks[lockId];
     if (l.depositor == address(0)) revert LockNotFound();
     if (l.claimed) revert LockAlreadyClaimed();
     if (uint64(block.timestamp) < l.unlockTime) revert TimelockNotExpired();
 
-    bytes32 computed = keccak256(secret);
-    if (computed != l.hashlock) revert InvalidSecret();
+    CommitState storage c = _commits[lockId];
+    if (c.commitment == bytes32(0)) revert CommitmentNotFound();
+    if (c.committer != msg.sender) revert CommitterMismatch();
+    if (uint64(block.number) < c.commitBlock + MIN_COMMIT_DELAY_BLOCKS) revert CommitDelayNotElapsed();
+
+    bytes32 computedHashlock = keccak256(secret);
+    if (computedHashlock != l.hashlock) revert InvalidSecret();
+
+    bytes32 computedCommitment = keccak256(abi.encodePacked(lockId, msg.sender, secret, salt));
+    if (computedCommitment != c.commitment) revert InvalidCommitment();
 
     l.claimed = true;
+    delete _commits[lockId];
 
     IERC20(l.token).safeTransfer(msg.sender, l.amount);
 

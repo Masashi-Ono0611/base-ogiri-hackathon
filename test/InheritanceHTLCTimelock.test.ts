@@ -18,11 +18,17 @@ describe("InheritanceHTLCTimelock", () => {
     return { depositor, claimer, other, token, htlc };
   }
 
-  async function createLockFixture(params?: { amount?: bigint; unlockOffsetSeconds?: number; secret?: Uint8Array }) {
+  async function createLockFixture(params?: {
+    amount?: bigint;
+    unlockOffsetSeconds?: number;
+    secret?: Uint8Array;
+    salt?: Uint8Array;
+  }) {
     const { depositor, claimer, other, token, htlc } = await deployFixture();
 
     const amount = params?.amount ?? ethers.parseUnits("10", 18);
     const secret = params?.secret ?? ethers.toUtf8Bytes("my-secret");
+    const salt = params?.salt ?? ethers.toUtf8Bytes("my-salt");
     const hashlock = ethers.keccak256(secret);
 
     const latest = await ethers.provider.getBlock("latest");
@@ -37,18 +43,45 @@ describe("InheritanceHTLCTimelock", () => {
     const event = receipt!.logs.find((l: any) => l.fragment?.name === "LockCreated");
     const lockId = event!.args.lockId as bigint;
 
-    return { depositor, claimer, other, token, htlc, lockId, amount, secret, hashlock, unlockTime };
+    const commitmentForLock = ethers.solidityPackedKeccak256(
+      ["uint256", "address", "bytes", "bytes"],
+      [lockId, claimer.address, secret, salt]
+    );
+
+    return {
+      depositor,
+      claimer,
+      other,
+      token,
+      htlc,
+      lockId,
+      amount,
+      secret,
+      salt,
+      hashlock,
+      unlockTime,
+      commitment: commitmentForLock,
+    };
   }
 
-  it("allows any caller to claim after timelock with correct secret, transferring to msg.sender", async () => {
-    const { claimer, token, htlc, lockId, amount, secret } = await createLockFixture();
+  it("allows committer to revealAndClaim after timelock and commit delay", async () => {
+    const { claimer, token, htlc, lockId, amount, secret, salt, commitment } = await createLockFixture();
 
-    await expect(htlc.connect(claimer).claim(lockId, secret)).to.be.revertedWithCustomError(htlc, "TimelockNotExpired");
+    await expect(htlc.connect(claimer).commit(lockId, commitment)).to.emit(htlc, "LockCommitted");
 
     await ethers.provider.send("evm_increaseTime", [3601]);
     await ethers.provider.send("evm_mine", []);
 
-    await expect(() => htlc.connect(claimer).claim(lockId, secret)).to.changeTokenBalances(
+    await expect(htlc.connect(claimer).revealAndClaim(lockId, secret, salt)).to.be.revertedWithCustomError(
+      htlc,
+      "CommitDelayNotElapsed"
+    );
+
+    await ethers.provider.send("evm_mine", []);
+    await ethers.provider.send("evm_mine", []);
+    await ethers.provider.send("evm_mine", []);
+
+    await expect(() => htlc.connect(claimer).revealAndClaim(lockId, secret, salt)).to.changeTokenBalances(
       token,
       [claimer],
       [amount]
@@ -56,28 +89,46 @@ describe("InheritanceHTLCTimelock", () => {
   });
 
   it("reverts with InvalidSecret for wrong secret", async () => {
-    const { claimer, htlc, lockId } = await createLockFixture();
+    const { claimer, htlc, lockId, salt, commitment } = await createLockFixture();
+
+    await htlc.connect(claimer).commit(lockId, commitment);
 
     await ethers.provider.send("evm_increaseTime", [3601]);
+    await ethers.provider.send("evm_mine", []);
+    await ethers.provider.send("evm_mine", []);
+    await ethers.provider.send("evm_mine", []);
     await ethers.provider.send("evm_mine", []);
 
     const wrongSecret = ethers.toUtf8Bytes("wrong-secret");
-    await expect(htlc.connect(claimer).claim(lockId, wrongSecret)).to.be.revertedWithCustomError(htlc, "InvalidSecret");
+    await expect(htlc.connect(claimer).revealAndClaim(lockId, wrongSecret, salt)).to.be.revertedWithCustomError(
+      htlc,
+      "InvalidSecret"
+    );
   });
 
   it("reverts with LockAlreadyClaimed on double claim", async () => {
-    const { claimer, htlc, lockId, secret } = await createLockFixture();
+    const { claimer, htlc, lockId, secret, salt, commitment } = await createLockFixture();
+
+    await htlc.connect(claimer).commit(lockId, commitment);
 
     await ethers.provider.send("evm_increaseTime", [3601]);
     await ethers.provider.send("evm_mine", []);
+    await ethers.provider.send("evm_mine", []);
+    await ethers.provider.send("evm_mine", []);
+    await ethers.provider.send("evm_mine", []);
 
-    await htlc.connect(claimer).claim(lockId, secret);
-    await expect(htlc.connect(claimer).claim(lockId, secret)).to.be.revertedWithCustomError(htlc, "LockAlreadyClaimed");
+    await htlc.connect(claimer).revealAndClaim(lockId, secret, salt);
+    await expect(htlc.connect(claimer).revealAndClaim(lockId, secret, salt)).to.be.revertedWithCustomError(
+      htlc,
+      "LockAlreadyClaimed"
+    );
   });
 
   it("reverts with LockNotFound for unknown lockId", async () => {
     const { claimer, htlc } = await deployFixture();
-    await expect(htlc.connect(claimer).claim(999999, ethers.toUtf8Bytes("x"))).to.be.revertedWithCustomError(htlc, "LockNotFound");
+    await expect(
+      htlc.connect(claimer).commit(999999, ethers.keccak256(ethers.toUtf8Bytes("x")))
+    ).to.be.revertedWithCustomError(htlc, "LockNotFound");
   });
 
   it("reverts with InvalidAmount for zero amount", async () => {
@@ -108,12 +159,26 @@ describe("InheritanceHTLCTimelock", () => {
     ).to.be.revertedWithCustomError(htlc, "InvalidUnlockTime");
   });
 
-  it("any caller can claim (not only depositor) if they have the secret", async () => {
-    const { other, token, htlc, lockId, amount, secret } = await createLockFixture();
+  it("prevents a mempool observer from stealing the claim using observed secret and salt", async () => {
+    const { claimer, other, token, htlc, lockId, amount, secret, salt, commitment } = await createLockFixture();
+
+    await htlc.connect(claimer).commit(lockId, commitment);
 
     await ethers.provider.send("evm_increaseTime", [3601]);
     await ethers.provider.send("evm_mine", []);
+    await ethers.provider.send("evm_mine", []);
+    await ethers.provider.send("evm_mine", []);
+    await ethers.provider.send("evm_mine", []);
 
-    await expect(() => htlc.connect(other).claim(lockId, secret)).to.changeTokenBalances(token, [other], [amount]);
+    await expect(htlc.connect(other).revealAndClaim(lockId, secret, salt)).to.be.revertedWithCustomError(
+      htlc,
+      "CommitterMismatch"
+    );
+
+    await expect(() => htlc.connect(claimer).revealAndClaim(lockId, secret, salt)).to.changeTokenBalances(
+      token,
+      [claimer],
+      [amount]
+    );
   });
 });

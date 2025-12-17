@@ -1,6 +1,6 @@
 "use client";
 
-import { USDC_BASE_SEPOLIA } from "../_shared";
+import { USDC_BASE_SEPOLIA } from "../../constants/onchain";
 import { type PrintDocumentData } from "./PrintDocument";
 
 export type PdfDraft = {
@@ -13,7 +13,7 @@ export type PdfDraft = {
   hashlock: string;
 };
 
-export const DOCUMENT_TITLE = "相続に関する書面（参考）";
+export const DOCUMENT_TITLE = "贈与契約書（デジタル資産ロック）";
 
 export function toPrintDocumentData(draft: PdfDraft): PrintDocumentData {
   const ms = new Date(draft.unlockAtLocal).getTime();

@@ -3,10 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { decodeEventLog, keccak256, parseUnits, type Hex, type Log } from "viem";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
+import { BASE_SEPOLIA_EXPLORER_BASE_URL, USDC_BASE_SEPOLIA, USDC_DECIMALS } from "../../constants/onchain";
 import {
-  HTLC_CONTRACT_ADDRESS,
-  USDC_BASE_SEPOLIA,
-  USDC_DECIMALS,
   erc20Abi,
   generateHumanSecret,
   htlcAbi,
@@ -31,7 +29,11 @@ type CreatedLock = {
   hashlock: Hex;
 };
 
-export function useDepositModel() {
+type Params = {
+  htlcContractAddress: `0x${string}` | "";
+};
+
+export function useDepositModel({ htlcContractAddress }: Params) {
   const { address, isConnected } = useAccount();
   const publicClient = usePublicClient();
   const { writeContractAsync } = useWriteContract();
@@ -53,8 +55,8 @@ export function useDepositModel() {
   const [createTxHash, setCreateTxHash] = useState<`0x${string}` | "">("");
   const [createTxStage, setCreateTxStage] = useState<TxStage>("broadcast complete");
 
-  const approveExplorerUrl = approveTxHash ? `https://sepolia.basescan.org/tx/${approveTxHash}` : "";
-  const createExplorerUrl = createTxHash ? `https://sepolia.basescan.org/tx/${createTxHash}` : "";
+  const approveExplorerUrl = approveTxHash ? `${BASE_SEPOLIA_EXPLORER_BASE_URL}/tx/${approveTxHash}` : "";
+  const createExplorerUrl = createTxHash ? `${BASE_SEPOLIA_EXPLORER_BASE_URL}/tx/${createTxHash}` : "";
 
   const secretHex = useMemo(() => secretStringToHex(secretPlain), [secretPlain]);
   const hashlock = useMemo(() => {
@@ -86,6 +88,7 @@ export function useDepositModel() {
     if (isDepositing) return "";
     if (!isConnected || !address) return "Connect your wallet first.";
     if (!publicClient) return "Public client not available.";
+    if (!htlcContractAddress) return "Contract address not available.";
     if (!amountInput.trim()) return "Amount is required.";
 
     try {
@@ -99,7 +102,7 @@ export function useDepositModel() {
     if (unlockTime <= BigInt(Math.floor(Date.now() / 1000))) return "Unlock time must be in the future.";
     if (!secretPlain.trim()) return "Secret is required. Enter a phrase you will remember.";
     return "";
-  }, [isDepositing, isConnected, address, publicClient, amountInput, unlockAtLocal, unlockTime, secretPlain]);
+  }, [isDepositing, isConnected, address, publicClient, htlcContractAddress, amountInput, unlockAtLocal, unlockTime, secretPlain]);
 
   const statusDisplay = useMemo(() => {
     if (!status && !lockId) return preflightError;
@@ -117,6 +120,7 @@ export function useDepositModel() {
   const isReadyToDeposit = useMemo(() => {
     if (!isConnected || !address) return false;
     if (!publicClient) return false;
+    if (!htlcContractAddress) return false;
     if (!secretPlain.trim()) return false;
     if (!unlockAtLocal) return false;
     if (unlockTime <= BigInt(Math.floor(Date.now() / 1000))) return false;
@@ -129,7 +133,7 @@ export function useDepositModel() {
     }
 
     return true;
-  }, [isConnected, address, publicClient, secretPlain, unlockAtLocal, unlockTime, amountInput]);
+  }, [isConnected, address, publicClient, htlcContractAddress, secretPlain, unlockAtLocal, unlockTime, amountInput]);
 
   const autoFillSecret = () => setSecretPlain(generateHumanSecret());
 
@@ -150,6 +154,11 @@ export function useDepositModel() {
     }
     if (!publicClient) {
       setStatus("Public client not available.");
+      setStatusIsError(true);
+      return;
+    }
+    if (!htlcContractAddress) {
+      setStatus("Contract address not available.");
       setStatusIsError(true);
       return;
     }
@@ -186,7 +195,7 @@ export function useDepositModel() {
         address: USDC_BASE_SEPOLIA,
         abi: erc20Abi,
         functionName: "approve",
-        args: [HTLC_CONTRACT_ADDRESS, amount],
+        args: [htlcContractAddress, amount],
       });
       setApproveTxHash(approveHash);
       setApproveTxStage("broadcast complete");
@@ -196,7 +205,7 @@ export function useDepositModel() {
       setStatus("Creating lock...");
       setStatusIsError(false);
       const createHash = await writeContractAsync({
-        address: HTLC_CONTRACT_ADDRESS,
+        address: htlcContractAddress,
         abi: htlcAbi,
         functionName: "createLock",
         args: [USDC_BASE_SEPOLIA, amount, hashlock as Hex, unlockTime],
@@ -206,7 +215,7 @@ export function useDepositModel() {
       const receipt = await publicClient.waitForTransactionReceipt({ hash: createHash });
       setCreateTxStage("included in a block");
 
-      const created = receipt.logs.find((l: Log) => l.address.toLowerCase() === HTLC_CONTRACT_ADDRESS.toLowerCase());
+      const created = receipt.logs.find((l: Log) => l.address.toLowerCase() === htlcContractAddress.toLowerCase());
       if (created) {
         try {
           const decoded = decodeEventLog({
