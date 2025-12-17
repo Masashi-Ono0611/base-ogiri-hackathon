@@ -7,7 +7,7 @@ import { sdk } from "@farcaster/miniapp-sdk";
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
 import styles from "./styles.module.css";
-import { HTLC_CONTRACT_ADDRESS } from "./_shared";
+import { useHtlcContractAddress } from "./useHtlcContractAddress";
 import { MiniAppDebug } from "./MiniAppDebug";
 import { AppHeader } from "./AppHeader";
 import { BottomNav } from "./BottomNav";
@@ -15,6 +15,8 @@ import { BottomNav } from "./BottomNav";
 export function BottomLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isFrameReady, setFrameReady } = useMiniKit();
+
+  const { contractAddress: htlcContractAddress } = useHtlcContractAddress();
 
   const { isConnected } = useAccount();
   const chainId = useChainId();
@@ -97,7 +99,7 @@ export function BottomLayoutClient({ children }: { children: React.ReactNode }) 
 
   return (
     <div className={styles.container}>
-      <AppHeader contractAddress={HTLC_CONTRACT_ADDRESS} />
+      <AppHeader contractAddress={htlcContractAddress || "(loading...)"} />
 
       {isWrongNetwork && (
         <div className={styles.alert}>

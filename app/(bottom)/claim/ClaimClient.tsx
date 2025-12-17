@@ -12,7 +12,7 @@ export default function ClaimClient() {
       <p className={styles.subtitle}>
         Enter lockId and secret.
         <br />
-        Anyone can claim after unlock.
+        After the timelock expires, you will first submit a commit transaction, then reveal & claim.
       </p>
 
       <div className={styles.subtitle}>
@@ -40,10 +40,19 @@ export default function ClaimClient() {
       <button
         type="button"
         className={styles.button}
-        onClick={m.handleClaim}
+        onClick={m.handleCommit}
         disabled={!m.isReadyToClaim || m.isClaiming}
       >
-        {m.isClaiming ? "Processing..." : "Claim"}
+        {m.isClaiming ? "Processing..." : "Commit"}
+      </button>
+
+      <button
+        type="button"
+        className={styles.button}
+        onClick={m.handleRevealAndClaim}
+        disabled={!m.canReveal || m.isClaiming}
+      >
+        {m.isClaiming ? "Processing..." : "Reveal & Claim"}
       </button>
 
       {m.statusDisplay && (
@@ -54,7 +63,7 @@ export default function ClaimClient() {
 
       {m.txHash && (
         <p className={styles.status}>
-          <strong>Claim Tx:</strong> {m.txStage}: {" "}
+          <strong>Tx:</strong> {m.txStage}: {" "}
           <a href={m.explorerUrl} target="_blank" rel="noreferrer">
             View on explorer
           </a>
