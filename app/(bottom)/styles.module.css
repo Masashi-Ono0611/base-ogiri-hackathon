@@ -166,13 +166,71 @@
 }
 
 .bottomNav {
+  width: 100%;
+  max-width: 560px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  padding: 1rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
   border-top: 1px solid var(--color-border);
   background: var(--color-overlay);
   backdrop-filter: blur(12px);
+}
+
+.printOnly {
+  display: none;
+}
+
+.printDocument {
+  color: #111;
+  background: #fff;
+  padding: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+}
+
+.printTitle {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.printSectionTitle {
+  margin: 18px 0 8px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.printParagraph {
+  margin: 8px 0;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+@media print {
+  .container {
+    background: #fff;
+  }
+
+  .header,
+  .bottomNav,
+  .alert,
+  .card > :not(.printOnly) {
+    display: none !important;
+  }
+
+  .card {
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    max-width: none;
+  }
+
+  .content {
+    padding: 0;
+  }
+
+  .printOnly {
+    display: block;
+  }
 }
 
  .alert {

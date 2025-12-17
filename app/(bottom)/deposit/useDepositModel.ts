@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { decodeEventLog, keccak256, parseUnits, type Hex } from "viem";
+import { decodeEventLog, keccak256, parseUnits, type Hex, type Log } from "viem";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
 import {
   HTLC_CONTRACT_ADDRESS,
@@ -24,6 +24,13 @@ type StatusTone = "error" | "status";
 
 type TxStage = "broadcast complete" | "included in a block";
 
+type CreatedLock = {
+  lockId: string;
+  amountInput: string;
+  unlockAtLocal: string;
+  hashlock: Hex;
+};
+
 export function useDepositModel() {
   const { address, isConnected } = useAccount();
   const publicClient = usePublicClient();
@@ -34,6 +41,7 @@ export function useDepositModel() {
   const [secretPlain, setSecretPlain] = useState<string>("");
 
   const [lockId, setLockId] = useState<string>("");
+  const [createdLock, setCreatedLock] = useState<CreatedLock | null>(null);
   const [status, setStatus] = useState<string>("");
   const [statusIsError, setStatusIsError] = useState(false);
 
@@ -131,6 +139,7 @@ export function useDepositModel() {
     setStatus("");
     setStatusIsError(false);
     setLockId("");
+    setCreatedLock(null);
     setApproveTxHash("");
     setCreateTxHash("");
 
@@ -197,7 +206,7 @@ export function useDepositModel() {
       const receipt = await publicClient.waitForTransactionReceipt({ hash: createHash });
       setCreateTxStage("included in a block");
 
-      const created = receipt.logs.find((l) => l.address.toLowerCase() === HTLC_CONTRACT_ADDRESS.toLowerCase());
+      const created = receipt.logs.find((l: Log) => l.address.toLowerCase() === HTLC_CONTRACT_ADDRESS.toLowerCase());
       if (created) {
         try {
           const decoded = decodeEventLog({
@@ -206,7 +215,15 @@ export function useDepositModel() {
             topics: created.topics,
           });
           if (decoded.eventName === "LockCreated") {
-            setLockId((decoded.args.lockId as bigint).toString());
+            const createdLockId = (decoded.args.lockId as bigint).toString();
+            setLockId(createdLockId);
+
+            setCreatedLock({
+              lockId: createdLockId,
+              amountInput,
+              unlockAtLocal,
+              hashlock: hashlock as Hex,
+            });
           }
         } catch {
           setLockId("(created; failed to decode LockCreated)");
@@ -231,21 +248,23 @@ export function useDepositModel() {
     setUnlockAtLocal,
     secretPlain,
     setSecretPlain,
-    autoFillSecret,
+    lockId,
+    createdLock,
     unlockTime,
     unlockDateText,
     secretHex,
     hashlock,
-    statusDisplay,
-    statusTone,
     isReadyToDeposit,
     isDepositing,
+    autoFillSecret,
     handleDeposit,
-    createTxHash,
-    createTxStage,
-    createExplorerUrl,
+    statusDisplay,
+    statusTone,
     approveTxHash,
     approveTxStage,
+    createTxHash,
+    createTxStage,
     approveExplorerUrl,
+    createExplorerUrl,
   };
 }

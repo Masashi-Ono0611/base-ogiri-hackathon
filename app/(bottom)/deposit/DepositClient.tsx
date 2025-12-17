@@ -1,22 +1,65 @@
 "use client";
 
 import styles from "../styles.module.css";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useDepositModel } from "./useDepositModel";
+import { HTLC_CONTRACT_ADDRESS, USDC_BASE_SEPOLIA } from "../_shared";
+import PdfClient from "../pdf/PdfClient";
+import { toPrintDocumentData } from "../pdf/usePdfModel";
 
 export default function DepositClient() {
-  const [mounted, setMounted] = useState(false);
   const m = useDepositModel();
+  const [printError, setPrintError] = useState<string>("");
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const hasPrintableLock = useMemo(() => {
+    if (!m.createdLock) return false;
+    return /^\d+$/.test(m.createdLock.lockId);
+  }, [m.createdLock]);
 
-  if (!mounted) return null;
+  const pdfDraft = useMemo(() => {
+    if (!hasPrintableLock || !m.createdLock) return null;
+    return {
+      contractAddress: HTLC_CONTRACT_ADDRESS,
+      lockId: m.createdLock.lockId,
+      chainName: "Base Sepolia",
+      tokenAddress: USDC_BASE_SEPOLIA,
+      amount: m.createdLock.amountInput,
+      unlockAtLocal: m.createdLock.unlockAtLocal,
+      hashlock: m.createdLock.hashlock,
+    };
+  }, [hasPrintableLock, m.createdLock]);
+
+  const printData = useMemo(() => {
+    if (!pdfDraft) return null;
+    return toPrintDocumentData(pdfDraft);
+  }, [pdfDraft]);
+
+  const ctaDisabled = hasPrintableLock ? false : !m.isReadyToDeposit || m.isDepositing;
+  const ctaLabel = hasPrintableLock
+    ? "Print document (PDF)"
+    : m.isDepositing
+      ? "Processing..."
+      : "Approve + Create Lock";
+
+  const handlePrimaryCta = async () => {
+    setPrintError("");
+    if (!hasPrintableLock) {
+      await m.handleDeposit();
+      return;
+    }
+
+    try {
+      window.print();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setPrintError(msg);
+    }
+  };
 
   return (
     <div className={styles.card}>
       <h1 className={styles.title}>Deposit</h1>
+      <div className={styles.subtitle}>Approve USDC and create a timelocked hashlock.</div>
       <div className={styles.subtitle}>
         <strong>USDC amount</strong>
         <div>How much USDC will be locked in the contract.</div>
@@ -80,10 +123,10 @@ export default function DepositClient() {
       <button
         type="button"
         className={styles.button}
-        onClick={m.handleDeposit}
-        disabled={!m.isReadyToDeposit || m.isDepositing}
+        onClick={handlePrimaryCta}
+        disabled={ctaDisabled}
       >
-        {m.isDepositing ? "Processing..." : "Approve + Create Lock"}
+        {ctaLabel}
       </button>
 
       {m.statusDisplay && (
@@ -109,6 +152,10 @@ export default function DepositClient() {
           </a>
         </p>
       )}
+
+      {printError && <p className={styles.error}>{printError}</p>}
+
+      <PdfClient data={printData} />
     </div>
   );
 }

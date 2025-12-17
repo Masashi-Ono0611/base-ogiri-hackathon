@@ -16,6 +16,7 @@ import { useAccount, useChainId, useSwitchChain } from "wagmi";
 import { baseSepolia } from "wagmi/chains";
 import styles from "./styles.module.css";
 import { HTLC_CONTRACT_ADDRESS } from "./_shared";
+import { MiniAppDebug } from "./MiniAppDebug";
 
 export function BottomLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -98,6 +99,8 @@ export function BottomLayoutClient({ children }: { children: React.ReactNode }) 
   const isDeposit = pathname === "/deposit";
   const isClaim = pathname === "/claim";
 
+  const showMiniAppDebug = process.env.NEXT_PUBLIC_MINIAPP_DEBUG === "true";
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -154,22 +157,13 @@ export function BottomLayoutClient({ children }: { children: React.ReactNode }) 
 
       <main className={styles.content}>{children}</main>
 
-      <div className={styles.alert}>
-        <div className={styles.alertTitle}>Mini App Debug</div>
-        <div className={styles.alertText}>
-          SDK: <span className={styles.mono}>{miniAppSdkReady}</span>
-        </div>
-        <div className={styles.alertText}>
-          isInMiniApp: <span className={styles.mono}>{miniAppIsInMiniApp === null ? "null" : String(miniAppIsInMiniApp)}</span>
-        </div>
-        <div className={styles.alertText}>
-          supportedChains:{" "}
-          <span className={styles.mono}>
-            {Array.isArray(miniAppChains) && miniAppChains.length ? miniAppChains.join(", ") : "(empty)"}
-          </span>
-        </div>
-        {miniAppSdkError && <div className={styles.alertText}>SDK error: {miniAppSdkError}</div>}
-      </div>
+      <MiniAppDebug
+        show={showMiniAppDebug}
+        miniAppSdkReady={miniAppSdkReady}
+        miniAppIsInMiniApp={miniAppIsInMiniApp}
+        miniAppChains={miniAppChains}
+        miniAppSdkError={miniAppSdkError}
+      />
 
       <nav className={styles.bottomNav}>
         <Link
