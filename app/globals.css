@@ -1,60 +1,32 @@
 @layer base {
   :root {
-    --background: #ffffff;
-    --foreground: #171717;
+    --background: #0a0a0a;
+    --foreground: #ededed;
 
-    --color-background: #ffffff;
-    --color-surface: #f6f7fb;
-    --color-surface-2: #eef1f9;
-    --color-bottom-nav-bg: #f6f7fb;
-    --color-border: rgba(0, 0, 0, 0.12);
-    --color-text: #0b0d12;
-    --color-text-muted: rgba(11, 13, 18, 0.7);
-    --color-overlay: rgba(255, 255, 255, 0.78);
-    --color-placeholder: rgba(11, 13, 18, 0.45);
+    --color-background: #0b0d12;
+    --color-surface: rgba(255, 255, 255, 0.06);
+    --color-surface-2: rgba(255, 255, 255, 0.09);
+    --color-bottom-nav-bg: #1a1c20;
+    --color-border: rgba(255, 255, 255, 0.12);
+    --color-text: #f5f7ff;
+    --color-text-muted: rgba(245, 247, 255, 0.7);
+    --color-overlay: rgba(11, 13, 18, 0.78);
+    --color-placeholder: rgba(245, 247, 255, 0.45);
     --color-primary: #0052ff;
-    --color-primary-hover: #0046d5;
+    --color-primary-hover: #2f6bff;
     --color-on-primary: #ffffff;
-    --color-primary-border: rgba(0, 82, 255, 0.55);
-    --color-primary-ring: rgba(0, 82, 255, 0.22);
-    --color-primary-surface: rgba(0, 82, 255, 0.16);
-    --color-primary-surface-border: rgba(0, 82, 255, 0.4);
-    --color-danger: #ff3b30;
+    --color-primary-border: rgba(0, 82, 255, 0.65);
+    --color-primary-ring: rgba(0, 82, 255, 0.26);
+    --color-primary-surface: rgba(0, 82, 255, 0.18);
+    --color-primary-surface-border: rgba(0, 82, 255, 0.45);
+    --color-danger: #ff453a;
 
     --radius-sm: 10px;
     --radius-md: 12px;
     --radius-lg: 16px;
 
-    --shadow-elev-1: 0 10px 30px rgba(0, 0, 0, 0.12);
-    --shadow-elev-2: 0 12px 40px rgba(0, 0, 0, 0.18);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --background: #0a0a0a;
-      --foreground: #ededed;
-
-      --color-background: #0b0d12;
-      --color-surface: rgba(255, 255, 255, 0.06);
-      --color-surface-2: rgba(255, 255, 255, 0.09);
-      --color-bottom-nav-bg: #1a1c20;
-      --color-border: rgba(255, 255, 255, 0.12);
-      --color-text: #f5f7ff;
-      --color-text-muted: rgba(245, 247, 255, 0.7);
-      --color-overlay: rgba(11, 13, 18, 0.78);
-      --color-placeholder: rgba(245, 247, 255, 0.45);
-      --color-primary: #0052ff;
-      --color-primary-hover: #2f6bff;
-      --color-on-primary: #ffffff;
-      --color-primary-border: rgba(0, 82, 255, 0.65);
-      --color-primary-ring: rgba(0, 82, 255, 0.26);
-      --color-primary-surface: rgba(0, 82, 255, 0.18);
-      --color-primary-surface-border: rgba(0, 82, 255, 0.45);
-      --color-danger: #ff453a;
-
-      --shadow-elev-1: 0 10px 30px rgba(0, 0, 0, 0.35);
-      --shadow-elev-2: 0 12px 40px rgba(0, 0, 0, 0.45);
-    }
+    --shadow-elev-1: 0 10px 30px rgba(0, 0, 0, 0.35);
+    --shadow-elev-2: 0 12px 40px rgba(0, 0, 0, 0.45);
   }
 
   html,
@@ -80,13 +52,6 @@
     padding: 0.25rem 0.5rem calc(0.25rem + 2px);
   }
 
-  @media (prefers-color-scheme: dark) {
-    code {
-      background-color: var(--color-surface-2);
-      border: 1px solid var(--color-border);
-    }
-  }
-
   * {
     box-sizing: border-box;
     padding: 0;
@@ -98,9 +63,7 @@
     text-decoration: none;
   }
 
-  @media (prefers-color-scheme: dark) {
-    html {
-      color-scheme: dark;
-    }
+  html {
+    color-scheme: dark;
   }
 }
