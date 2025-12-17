@@ -110,6 +110,12 @@ Result:
 - The claimant wallet does not need to be specified at lock creation time.
 - The depositor still shares only the secret out-of-band.
 
+Important implementation note (current frontend):
+- The app generates a random `salt` at commit time and keeps it only in client-side state.
+- If the user refreshes the page, closes the tab, or the app crashes after commit, the `salt` will be lost.
+- Since the contract does not allow overwriting a commitment (`commitment` is one-time per lock), losing `salt` can make the user unable to proceed with `revealAndClaim`.
+- Operationally, users should complete commit -> reveal in the same session.
+
 ## 8. Open items
 - Finalize `MIN_COMMIT_DELAY_BLOCKS` based on chain conditions.
 - Decide whether commitments are one-time-only per lock or overwriteable under strict rules.
