@@ -72,6 +72,18 @@
     z-index: 1000 !important;
   }
 
+  .ock-z-40,
+  .ock-z-50 {
+    z-index: 2000 !important;
+  }
+
+  [data-testid="ockSheet"],
+  [data-testid="ockSheetOverlay"],
+  [data-testid="ockDialog"],
+  [data-testid="ockModalOverlay"] {
+    z-index: 2000 !important;
+  }
+
   html {
     color-scheme: dark;
   }
