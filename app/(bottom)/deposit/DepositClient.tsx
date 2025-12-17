@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "../styles.module.css";
+import styles from "../../styles/bottom.module.css";
 import { useMemo, useState } from "react";
 import { useDepositModel } from "./useDepositModel";
 import { USDC_BASE_SEPOLIA } from "../../constants/onchain";

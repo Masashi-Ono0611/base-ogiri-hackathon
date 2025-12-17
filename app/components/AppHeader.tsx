@@ -7,7 +7,7 @@ import {
   WalletDropdownDisconnect,
 } from "@coinbase/onchainkit/wallet";
 import { Address, Avatar, EthBalance, Identity, Name } from "@coinbase/onchainkit/identity";
-import styles from "./styles.module.css";
+import styles from "../styles/bottom.module.css";
 
 type Props = {
   contractAddress: string;

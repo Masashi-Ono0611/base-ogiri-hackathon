@@ -4,7 +4,8 @@ import { useMemo, useState } from "react";
 import { encodePacked, keccak256, type Hex } from "viem";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
 import { BASE_SEPOLIA_EXPLORER_BASE_URL } from "../../constants/onchain";
-import { htlcAbi, randomHex, secretStringToHex } from "../_shared";
+import { htlcAbi } from "../../abi/htlcAbi";
+import { randomHex, secretStringToHex } from "../../lib/crypto";
 import { useHtlcContractAddress } from "../../hooks/useHtlcContractAddress";
 
 type StatusTone = "error" | "status";

@@ -4,12 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { decodeEventLog, keccak256, parseUnits, type Hex, type Log } from "viem";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
 import { BASE_SEPOLIA_EXPLORER_BASE_URL, USDC_BASE_SEPOLIA, USDC_DECIMALS } from "../../constants/onchain";
-import {
-  erc20Abi,
-  generateHumanSecret,
-  htlcAbi,
-  secretStringToHex,
-} from "../_shared";
+import { erc20Abi } from "../../abi/erc20Abi";
+import { htlcAbi } from "../../abi/htlcAbi";
+import { generateHumanSecret, secretStringToHex } from "../../lib/crypto";
 
 function formatDatetimeLocal(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
