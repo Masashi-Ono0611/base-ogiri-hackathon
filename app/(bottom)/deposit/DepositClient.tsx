@@ -1,43 +1,60 @@
 "use client";
 
 import styles from "../styles.module.css";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useDepositModel } from "./useDepositModel";
-import PdfClient from "../pdf/PdfClient";
 import { HTLC_CONTRACT_ADDRESS, USDC_BASE_SEPOLIA } from "../_shared";
-import { usePdfModel } from "../pdf/usePdfModel";
+import PdfClient from "../pdf/PdfClient";
+import { toPrintDocumentData } from "../pdf/usePdfModel";
 
 export default function DepositClient() {
-  const [mounted, setMounted] = useState(false);
   const m = useDepositModel();
+  const [printError, setPrintError] = useState<string>("");
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const hasPrintableLock = useMemo(() => {
+    if (!m.createdLock) return false;
+    return /^\d+$/.test(m.createdLock.lockId);
+  }, [m.createdLock]);
 
-  const hasValidLockId = Boolean(m.lockId && /^\d+$/.test(m.lockId));
-  const pdfDraft = hasValidLockId
-    ? {
-        contractAddress: HTLC_CONTRACT_ADDRESS,
-        lockId: m.lockId,
-        chainName: "Base Sepolia",
-        tokenAddress: USDC_BASE_SEPOLIA,
-        amount: m.amountInput,
-        unlockAtLocal: m.unlockAtLocal,
-        hashlock: m.hashlock,
-      }
-    : null;
+  const pdfDraft = useMemo(() => {
+    if (!hasPrintableLock || !m.createdLock) return null;
+    return {
+      contractAddress: HTLC_CONTRACT_ADDRESS,
+      lockId: m.createdLock.lockId,
+      chainName: "Base Sepolia",
+      tokenAddress: USDC_BASE_SEPOLIA,
+      amount: m.createdLock.amountInput,
+      unlockAtLocal: m.createdLock.unlockAtLocal,
+      hashlock: m.createdLock.hashlock,
+    };
+  }, [hasPrintableLock, m.createdLock]);
 
-  const pdf = usePdfModel({ draft: pdfDraft, readFromStorage: false });
+  const printData = useMemo(() => {
+    if (!pdfDraft) return null;
+    return toPrintDocumentData(pdfDraft);
+  }, [pdfDraft]);
 
-  if (!mounted) return null;
-
-  const ctaDisabled = hasValidLockId ? !pdf.isReadyToPrint : !m.isReadyToDeposit || m.isDepositing;
-  const ctaLabel = hasValidLockId
+  const ctaDisabled = hasPrintableLock ? false : !m.isReadyToDeposit || m.isDepositing;
+  const ctaLabel = hasPrintableLock
     ? "Print document (PDF)"
     : m.isDepositing
       ? "Processing..."
       : "Approve + Create Lock";
+
+  const handlePrimaryCta = async () => {
+    setPrintError("");
+    if (!hasPrintableLock) {
+      await m.handleDeposit();
+      return;
+    }
+
+    try {
+      window.print();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setPrintError(msg);
+    }
+  };
 
   return (
     <div className={styles.card}>
@@ -106,7 +123,7 @@ export default function DepositClient() {
       <button
         type="button"
         className={styles.button}
-        onClick={hasValidLockId ? pdf.handlePrint : m.handleDeposit}
+        onClick={handlePrimaryCta}
         disabled={ctaDisabled}
       >
         {ctaLabel}
@@ -136,11 +153,9 @@ export default function DepositClient() {
         </p>
       )}
 
-      {pdf.statusDisplay && (
-        <p className={pdf.statusTone === "error" ? styles.error : styles.status}>{pdf.statusDisplay}</p>
-      )}
+      {printError && <p className={styles.error}>{printError}</p>}
 
-      <PdfClient variant="document" draft={pdfDraft} readFromStorage={false} />
+      <PdfClient data={printData} />
     </div>
   );
 }

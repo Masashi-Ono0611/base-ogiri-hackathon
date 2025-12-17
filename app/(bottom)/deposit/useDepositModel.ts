@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { decodeEventLog, keccak256, parseUnits, type Hex } from "viem";
+import { decodeEventLog, keccak256, parseUnits, type Hex, type Log } from "viem";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
 import {
   HTLC_CONTRACT_ADDRESS,
@@ -12,8 +12,6 @@ import {
   htlcAbi,
   secretStringToHex,
 } from "../_shared";
-
- const PDF_DRAFT_STORAGE_KEY = "pdfDraft";
 
 function formatDatetimeLocal(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -26,6 +24,13 @@ type StatusTone = "error" | "status";
 
 type TxStage = "broadcast complete" | "included in a block";
 
+type CreatedLock = {
+  lockId: string;
+  amountInput: string;
+  unlockAtLocal: string;
+  hashlock: Hex;
+};
+
 export function useDepositModel() {
   const { address, isConnected } = useAccount();
   const publicClient = usePublicClient();
@@ -36,6 +41,7 @@ export function useDepositModel() {
   const [secretPlain, setSecretPlain] = useState<string>("");
 
   const [lockId, setLockId] = useState<string>("");
+  const [createdLock, setCreatedLock] = useState<CreatedLock | null>(null);
   const [status, setStatus] = useState<string>("");
   const [statusIsError, setStatusIsError] = useState(false);
 
@@ -133,6 +139,7 @@ export function useDepositModel() {
     setStatus("");
     setStatusIsError(false);
     setLockId("");
+    setCreatedLock(null);
     setApproveTxHash("");
     setCreateTxHash("");
 
@@ -199,7 +206,7 @@ export function useDepositModel() {
       const receipt = await publicClient.waitForTransactionReceipt({ hash: createHash });
       setCreateTxStage("included in a block");
 
-      const created = receipt.logs.find((l) => l.address.toLowerCase() === HTLC_CONTRACT_ADDRESS.toLowerCase());
+      const created = receipt.logs.find((l: Log) => l.address.toLowerCase() === HTLC_CONTRACT_ADDRESS.toLowerCase());
       if (created) {
         try {
           const decoded = decodeEventLog({
@@ -211,22 +218,12 @@ export function useDepositModel() {
             const createdLockId = (decoded.args.lockId as bigint).toString();
             setLockId(createdLockId);
 
-            try {
-              localStorage.setItem(
-                PDF_DRAFT_STORAGE_KEY,
-                JSON.stringify({
-                  contractAddress: HTLC_CONTRACT_ADDRESS,
-                  lockId: createdLockId,
-                  chainName: "Base Sepolia",
-                  tokenAddress: USDC_BASE_SEPOLIA,
-                  amount: amountInput,
-                  unlockAtLocal,
-                  hashlock,
-                })
-              );
-            } catch {
-              // ignore storage failures
-            }
+            setCreatedLock({
+              lockId: createdLockId,
+              amountInput,
+              unlockAtLocal,
+              hashlock: hashlock as Hex,
+            });
           }
         } catch {
           setLockId("(created; failed to decode LockCreated)");
@@ -252,6 +249,7 @@ export function useDepositModel() {
     secretPlain,
     setSecretPlain,
     lockId,
+    createdLock,
     unlockTime,
     unlockDateText,
     secretHex,
