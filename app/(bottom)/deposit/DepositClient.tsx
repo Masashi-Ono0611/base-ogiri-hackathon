@@ -107,19 +107,20 @@ export default function DepositClient() {
       <details className={styles.subtitle}>
         <summary>Details</summary>
         <div>
-          UnlockTime: <span className={styles.mono}>{m.unlockTime.toString()}</span>
-        </div>
-        {m.unlockDateText && (
-          <div>
-            Unlock (local): <span className={styles.mono}>{m.unlockDateText}</span>
-          </div>
-        )}
-        <div>
           Secret bytes: <span className={styles.mono}>{m.secretHex}</span>
         </div>
         <div>
           Hashlock: <span className={styles.mono}>{m.hashlock}</span>
         </div>
+        <div>
+          UnlockTime: <span className={styles.mono}>{m.unlockTime.toString()}</span>
+        </div>
+        {m.unlockDateText && (
+          <div>
+            Unlock (local time): <span className={styles.mono}>{m.unlockDateText}</span>
+          </div>
+        )}
+
       </details>
 
       <button

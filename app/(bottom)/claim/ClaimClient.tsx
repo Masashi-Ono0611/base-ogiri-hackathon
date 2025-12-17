@@ -40,19 +40,10 @@ export default function ClaimClient() {
       <button
         type="button"
         className={styles.button}
-        onClick={m.handleCommit}
-        disabled={!m.isReadyToClaim || m.isClaiming}
+        onClick={m.handlePrimaryAction}
+        disabled={m.isPrimaryActionDisabled}
       >
-        {m.isClaiming ? "Processing..." : "Commit"}
-      </button>
-
-      <button
-        type="button"
-        className={styles.button}
-        onClick={m.handleRevealAndClaim}
-        disabled={!m.canReveal || m.isClaiming}
-      >
-        {m.isClaiming ? "Processing..." : "Reveal & Claim"}
+        {m.primaryButtonLabel}
       </button>
 
       {m.statusDisplay && (
@@ -61,10 +52,19 @@ export default function ClaimClient() {
         </p>
       )}
 
-      {m.txHash && (
+      {m.revealTxHash && (
         <p className={styles.status}>
-          <strong>Tx:</strong> {m.txStage}: {" "}
-          <a href={m.explorerUrl} target="_blank" rel="noreferrer">
+          <strong>Reveal &amp; Claim Tx:</strong> {m.revealTxStage}: {" "}
+          <a href={m.revealExplorerUrl} target="_blank" rel="noreferrer">
+            View on explorer
+          </a>
+        </p>
+      )}
+
+      {m.commitTxHash && (
+        <p className={styles.status}>
+          <strong>Commit Tx:</strong> {m.commitTxStage}: {" "}
+          <a href={m.commitExplorerUrl} target="_blank" rel="noreferrer">
             View on explorer
           </a>
         </p>

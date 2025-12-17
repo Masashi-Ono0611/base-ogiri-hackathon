@@ -28,10 +28,14 @@ export function useClaimModel() {
   const [statusIsError, setStatusIsError] = useState(false);
   const [isClaiming, setIsClaiming] = useState(false);
 
-  const [txHash, setTxHash] = useState<`0x${string}` | "">("");
-  const [txStage, setTxStage] = useState<TxStage>("broadcast complete");
+  const [commitTxHash, setCommitTxHash] = useState<`0x${string}` | "">("");
+  const [commitTxStage, setCommitTxStage] = useState<TxStage>("broadcast complete");
 
-  const explorerUrl = txHash ? `${BASE_SEPOLIA_EXPLORER_BASE_URL}/tx/${txHash}` : "";
+  const [revealTxHash, setRevealTxHash] = useState<`0x${string}` | "">("");
+  const [revealTxStage, setRevealTxStage] = useState<TxStage>("broadcast complete");
+
+  const commitExplorerUrl = commitTxHash ? `${BASE_SEPOLIA_EXPLORER_BASE_URL}/tx/${commitTxHash}` : "";
+  const revealExplorerUrl = revealTxHash ? `${BASE_SEPOLIA_EXPLORER_BASE_URL}/tx/${revealTxHash}` : "";
 
   const preflightError = useMemo(() => {
     if (isClaiming) return "";
@@ -88,6 +92,18 @@ export function useClaimModel() {
     return true;
   }, [commitBlockNumber, saltHex, isReadyToClaim]);
 
+  const primaryButtonLabel = useMemo(() => {
+    if (isClaiming) return "Processing...";
+    if (!commitBlockNumber) return "Commit";
+    return "Reveal & Claim";
+  }, [isClaiming, commitBlockNumber]);
+
+  const isPrimaryActionDisabled = useMemo(() => {
+    if (isClaiming) return true;
+    if (!commitBlockNumber) return !isReadyToClaim;
+    return !canReveal;
+  }, [isClaiming, commitBlockNumber, isReadyToClaim, canReveal]);
+
   async function loadTimelockInfo(id: bigint) {
     if (!publicClient || !htlcContractAddress) throw new Error("Client not available.");
     const lock = (await publicClient.readContract({
@@ -111,7 +127,8 @@ export function useClaimModel() {
 
     setStatus("");
     setStatusIsError(false);
-    setTxHash("");
+    setCommitTxHash("");
+    setCommitTxStage("broadcast complete");
 
     setIsClaiming(true);
     try {
@@ -122,7 +139,8 @@ export function useClaimModel() {
         return;
       }
       if (info.now < info.unlockTime) {
-        setStatus(`Timelock not expired yet. UnlockTime: ${info.unlockTime.toString()}`);
+        const unlockLocal = new Date(Number(info.unlockTime) * 1000).toLocaleString();
+        setStatus(`Timelock not expired yet. UnlockTime: ${info.unlockTime.toString()} Local time: ${unlockLocal}`);
         setStatusIsError(true);
         return;
       }
@@ -144,14 +162,14 @@ export function useClaimModel() {
         functionName: "commit",
         args: [lockIdBigInt, commitment],
       });
-      setTxHash(hash);
-      setTxStage("broadcast complete");
+      setCommitTxHash(hash);
+      setCommitTxStage("broadcast complete");
       setStatus("Commit broadcast complete.");
       setStatusIsError(false);
 
       const receipt = await publicClient!.waitForTransactionReceipt({ hash });
       setCommitBlockNumber(receipt.blockNumber);
-      setTxStage("included in a block");
+      setCommitTxStage("included in a block");
       setStatus("Commit included in a block.");
       setStatusIsError(false);
     } catch (e) {
@@ -163,6 +181,14 @@ export function useClaimModel() {
     }
   }
 
+  async function handlePrimaryAction() {
+    if (commitBlockNumber) {
+      await handleRevealAndClaim();
+      return;
+    }
+    await handleCommit();
+  }
+
   async function handleRevealAndClaim() {
     if (isClaiming) return;
     if (!canReveal) return;
@@ -171,7 +197,8 @@ export function useClaimModel() {
 
     setStatus("");
     setStatusIsError(false);
-    setTxHash("");
+    setRevealTxHash("");
+    setRevealTxStage("broadcast complete");
 
     setIsClaiming(true);
     try {
@@ -182,7 +209,8 @@ export function useClaimModel() {
         return;
       }
       if (info.now < info.unlockTime) {
-        setStatus(`Timelock not expired yet. UnlockTime: ${info.unlockTime.toString()}`);
+        const unlockLocal = new Date(Number(info.unlockTime) * 1000).toLocaleString();
+        setStatus(`Timelock not expired yet. UnlockTime: ${info.unlockTime.toString()} Unlock (local): ${unlockLocal}`);
         setStatusIsError(true);
         return;
       }
@@ -212,13 +240,13 @@ export function useClaimModel() {
         functionName: "revealAndClaim",
         args: [lockIdBigInt, secretHex, saltHex],
       });
-      setTxHash(hash);
-      setTxStage("broadcast complete");
+      setRevealTxHash(hash);
+      setRevealTxStage("broadcast complete");
       setStatus("Reveal broadcast complete.");
       setStatusIsError(false);
 
       await publicClient!.waitForTransactionReceipt({ hash });
-      setTxStage("included in a block");
+      setRevealTxStage("included in a block");
       setStatus("Claim included in a block.");
       setStatusIsError(false);
     } catch (e) {
@@ -243,9 +271,15 @@ export function useClaimModel() {
     isClaiming,
     handleCommit,
     handleRevealAndClaim,
+    handlePrimaryAction,
+    primaryButtonLabel,
+    isPrimaryActionDisabled,
     canReveal,
-    txHash,
-    txStage,
-    explorerUrl,
+    revealTxHash,
+    revealTxStage,
+    revealExplorerUrl,
+    commitTxHash,
+    commitTxStage,
+    commitExplorerUrl,
   };
 }
