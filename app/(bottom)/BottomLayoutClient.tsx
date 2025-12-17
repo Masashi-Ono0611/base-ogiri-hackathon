@@ -5,7 +5,6 @@ import { useEffect } from "react";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import styles from "../styles/bottom.module.css";
 import { BASE_SEPOLIA_CHAIN_ID } from "../constants/onchain";
-import { useHtlcContractAddress } from "../hooks/useHtlcContractAddress";
 import { useMiniAppCapabilities } from "../hooks/useMiniAppCapabilities";
 import { useAutoSwitchChain } from "../hooks/useAutoSwitchChain";
 import { MiniAppDebug } from "../components/MiniAppDebug";
@@ -16,8 +15,6 @@ import { NetworkMismatchBanner } from "../components/NetworkMismatchBanner";
 export function BottomLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isFrameReady, setFrameReady } = useMiniKit();
-
-  const { contractAddress: htlcContractAddress } = useHtlcContractAddress();
 
   const targetChainId = BASE_SEPOLIA_CHAIN_ID;
   const { isWrongNetwork, switchError, isSwitching, switchToTargetChain } = useAutoSwitchChain({
@@ -37,7 +34,7 @@ export function BottomLayoutClient({ children }: { children: React.ReactNode }) 
 
   return (
     <div className={styles.container}>
-      <AppHeader contractAddress={htlcContractAddress || "(loading...)"} />
+      <AppHeader />
 
       <NetworkMismatchBanner
         show={isWrongNetwork}

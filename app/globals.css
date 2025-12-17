@@ -63,6 +63,15 @@
     text-decoration: none;
   }
 
+  [data-radix-portal] {
+    position: relative;
+    z-index: 1000;
+  }
+
+  [data-radix-popper-content-wrapper] {
+    z-index: 1000 !important;
+  }
+
   html {
     color-scheme: dark;
   }

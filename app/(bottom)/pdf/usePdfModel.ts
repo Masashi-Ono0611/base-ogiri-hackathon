@@ -17,7 +17,18 @@ export const DOCUMENT_TITLE = "贈与契約書（デジタル資産ロック）"
 
 export function toPrintDocumentData(draft: PdfDraft): PrintDocumentData {
   const ms = new Date(draft.unlockAtLocal).getTime();
-  const unlockDateText = Number.isFinite(ms) ? new Date(ms).toLocaleString() : draft.unlockAtLocal;
+  const unlockDate = Number.isFinite(ms) ? new Date(ms) : null;
+  const tzOffsetMin = unlockDate ? -unlockDate.getTimezoneOffset() : null;
+  const tz = (() => {
+    if (tzOffsetMin === null) return "";
+    const sign = tzOffsetMin >= 0 ? "+" : "-";
+    const abs = Math.abs(tzOffsetMin);
+    const hh = String(Math.floor(abs / 60)).padStart(2, "0");
+    const mm = String(abs % 60).padStart(2, "0");
+    return `UTC${sign}${hh}:${mm}`;
+  })();
+  const unlockDateTextBase = unlockDate ? unlockDate.toLocaleString() : draft.unlockAtLocal;
+  const unlockDateText = tz ? `${unlockDateTextBase} (${tz})` : unlockDateTextBase;
 
   return {
     documentTitle: DOCUMENT_TITLE,

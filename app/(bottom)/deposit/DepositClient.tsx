@@ -107,6 +107,15 @@ export default function DepositClient() {
       <details className={styles.subtitle}>
         <summary>Details</summary>
         <div>
+          Chain: <span className={styles.mono}>Base Sepolia</span>
+        </div>
+        <div>
+          Token: <span className={styles.mono}>{USDC_BASE_SEPOLIA}</span>
+        </div>
+        <div>
+          Contract: <span className={styles.mono}>{htlcContractAddress || "(loading...)"}</span>
+        </div>
+        <div>
           Secret bytes: <span className={styles.mono}>{m.secretHex}</span>
         </div>
         <div>
