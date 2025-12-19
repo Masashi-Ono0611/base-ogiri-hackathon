@@ -14,30 +14,30 @@ export default function WalkthroughClient() {
   const steps = useMemo(
     () => [
       {
-        title: "1. What is MagoHODL?",
-        body: "MagoHODL locks crypto so it cannot be sold early.",
+        title: "What is MagoHODL?",
+        body: "A crypto dapp for passing funds to your grandchildren. Your funds are time-locked, so cannot be sold early.",
+        imageSrc: "/MagoHODL_step1.png",
       },
       {
-        title: "2. Lock",
-        body: "Choose an amount and an unlock time, then lock it.",
+        title: "Lock",
+        body: "Lock your crypto with a hashlock. We also generate an official document.",
+        imageSrc: "/MagoHODL_step2.png",
       },
       {
-        title: "3. Unlock",
-        body: "After the time ends, use your secret to unlock and withdraw.",
+        title: "Unlock",
+        body: "When the time is up, your grandchildren can use the secret to unlock and withdraw your funds.",
+        imageSrc: "/MagoHODL_step3.png",
       },
     ],
     [],
   );
 
   const [index, setIndex] = useState(0);
-  const [stepKey, setStepKey] = useState(0);
   const isLast = index === steps.length - 1;
-  const progressPct = Math.round(((index + 1) / steps.length) * 100);
 
   const goNext = () => {
     if (!isLast) {
       setIndex((v) => Math.min(v + 1, steps.length - 1));
-      setStepKey((v) => v + 1);
       return;
     }
     router.replace(next);
@@ -49,7 +49,6 @@ export default function WalkthroughClient() {
 
   const goBack = () => {
     setIndex((v) => Math.max(v - 1, 0));
-    setStepKey((v) => v + 1);
   };
 
   return (
@@ -80,13 +79,24 @@ export default function WalkthroughClient() {
             </button>
           </div>
 
-          <div className={w.progress}>
-            <div className={w.progressBar} aria-hidden>
-              <div className={w.progressFill} style={{ width: `${progressPct}%` }} />
-            </div>
+          <div className={w.heroWrap}>
+            <Image
+              src={steps[index].imageSrc}
+              alt="MagoHODL"
+              fill
+              sizes="(max-width: 560px) 92vw, 560px"
+              style={{ objectFit: "cover", objectPosition: "center" }}
+              priority
+            />
           </div>
 
-          <div key={stepKey}>
+          <div className={w.stepIndicator}>
+            {steps.map((_, i) => (
+              <span key={i} className={`${w.stepDot} ${i === index ? w.stepDotActive : ""}`} aria-hidden />
+            ))}
+          </div>
+
+          <div>
             <h2 className={`${bottomStyles.title} ${w.stepTitle}`}>{steps[index].title}</h2>
             <p className={`${bottomStyles.subtitle} ${bottomStyles.subtitleLarge} ${w.stepBody}`}>{steps[index].body}</p>
           </div>
