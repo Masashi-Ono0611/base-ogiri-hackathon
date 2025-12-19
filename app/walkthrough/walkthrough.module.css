@@ -1,20 +1,8 @@
-.heroTitle {
-  margin-top: 8px;
-}
-
 .logoRowWrap {
   position: relative;
   width: 100%;
   max-width: 420px;
   height: 40px;
-}
-
-.heroSubtitle {
-  margin-top: 2px;
-}
-
-.stepMeta {
-  margin-top: 10px;
 }
 
 .stepTitle {
@@ -25,6 +13,38 @@
 .stepBody {
   margin-top: 10px;
   text-align: center;
+}
+
+.heroWrap {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stepIndicator {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.stepDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.stepDotActive {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.stepKicker {
+  text-align: center;
+  margin-top: 8px;
 }
 
 .topRow {
@@ -50,54 +70,6 @@
   justify-content: center;
 }
 
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.04);
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-
-.spark {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 30% 30%, #fff, rgba(255, 255, 255, 0.1));
-  box-shadow: 0 0 18px rgba(120, 119, 255, 0.5), 0 0 28px rgba(0, 209, 255, 0.35);
-}
-
-.progress {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.progressBar {
-  flex: 1;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  overflow: hidden;
-}
-
-.progressFill {
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgba(120, 119, 255, 1), rgba(0, 209, 255, 1));
-  transition: width 300ms ease;
-}
-
-.progressLabel {
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-
 .actions {
   display: flex;
   gap: 10px;
@@ -114,8 +86,3 @@
   border: 1px solid var(--color-border);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .progressFill {
-    transition: none;
-  }
-}
