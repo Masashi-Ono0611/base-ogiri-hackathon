@@ -2,6 +2,13 @@
   margin-top: 8px;
 }
 
+.logoRowWrap {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  height: 40px;
+}
+
 .heroSubtitle {
   margin-top: 2px;
 }
@@ -11,20 +18,36 @@
 }
 
 .stepTitle {
-  font-size: 20px;
   margin-top: 6px;
+  text-align: center;
 }
 
 .stepBody {
-  font-size: 14px;
   margin-top: 10px;
+  text-align: center;
 }
 
 .topRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: 32px 1fr 32px;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
+}
+
+.leftSpacer {
+  width: 32px;
+  height: 32px;
+}
+
+.skipButton {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .pill {
@@ -79,6 +102,11 @@
   display: flex;
   gap: 10px;
   margin-top: 18px;
+}
+
+.actionButton {
+  flex: 1;
+  text-align: center;
 }
 
 .secondary {

@@ -19,16 +19,13 @@ export function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const completedVersion = req.cookies.get(ONBOARDING_COOKIE_KEY)?.value;
-  const isCompleted = completedVersion === ONBOARDING_VERSION;
-
-  if (isCompleted) {
+  if (isDeposit) {
     return NextResponse.next();
   }
 
   const redirectUrl = req.nextUrl.clone();
   redirectUrl.pathname = "/walkthrough";
-  redirectUrl.searchParams.set("next", pathname + (search || ""));
+  redirectUrl.searchParams.set("next", "/deposit");
 
   return NextResponse.redirect(redirectUrl);
 }
