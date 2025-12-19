@@ -1,5 +1,3 @@
-"use client";
-
 import { BASE_CHAIN_NAME, CBBTC_BASE_MAINNET } from "../../constants/onchain";
 import { type PrintDocumentData } from "./PrintDocument";
 
