@@ -11,7 +11,7 @@ type Props = {
 
 type IconProps = React.SVGProps<SVGSVGElement>;
 
-const DepositIcon = (props: IconProps) => (
+const LockIcon = (props: IconProps) => (
   <svg
     viewBox="0 0 24 24"
     width="18"
@@ -24,13 +24,12 @@ const DepositIcon = (props: IconProps) => (
     aria-hidden="true"
     {...props}
   >
-    <path d="M12 3v12" />
-    <path d="M8 7l4-4 4 4" />
-    <rect x="3" y="15" width="18" height="6" rx="2" />
+    <rect x="5" y="11" width="14" height="10" rx="2" />
+    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
   </svg>
 );
 
-const ClaimIcon = (props: IconProps) => (
+const UnlockIcon = (props: IconProps) => (
   <svg
     viewBox="0 0 24 24"
     width="18"
@@ -43,9 +42,10 @@ const ClaimIcon = (props: IconProps) => (
     aria-hidden="true"
     {...props}
   >
-    <path d="M12 3v12" />
-    <path d="M8 11l4 4 4-4" />
-    <rect x="3" y="15" width="18" height="6" rx="2" />
+    <circle cx="7.5" cy="12" r="3" />
+    <path d="M10.5 12h10" />
+    <path d="M16 12v2" />
+    <path d="M18.5 12v3" />
   </svg>
 );
 
@@ -61,8 +61,8 @@ export function BottomNav({ isDeposit, isClaim }: Props) {
                 className={`${styles.navLink} ${isDeposit ? styles.navLinkActive : ""}`}
                 aria-current={isDeposit ? "page" : undefined}
               >
-                <DepositIcon className={styles.navIcon} />
-                <span>Deposit</span>
+                <LockIcon className={styles.navIcon} />
+                <span>Lock</span>
               </Link>
             </li>
             <li className={styles.bottomNavItem}>
@@ -71,8 +71,8 @@ export function BottomNav({ isDeposit, isClaim }: Props) {
                 className={`${styles.navLink} ${isClaim ? styles.navLinkActive : ""}`}
                 aria-current={isClaim ? "page" : undefined}
               >
-                <ClaimIcon className={styles.navIcon} />
-                <span>Claim</span>
+                <UnlockIcon className={styles.navIcon} />
+                <span>Unlock</span>
               </Link>
             </li>
           </ul>
