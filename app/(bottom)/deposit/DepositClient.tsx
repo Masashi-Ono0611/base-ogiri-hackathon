@@ -63,7 +63,7 @@ export default function DepositClient() {
         <h1 className={styles.title}>Lock</h1>
 
         <div className={`${styles.subtitle} ${styles.fieldLabel}`}>
-          <strong>💰 Lock amount</strong>
+          <strong>💰 Lock amount (cbBTC)</strong>
         </div>
         <input
           className={styles.input}

@@ -97,7 +97,7 @@ export function useDepositModel({ htlcContractAddress }: Params) {
 
     if (!unlockAtLocal) return "Unlock datetime is required.";
     if (unlockTime <= BigInt(Math.floor(Date.now() / 1000))) return "Unlock time must be in the future.";
-    if (!secretPlain.trim()) return "Secret is required. Enter a phrase you will remember.";
+    if (!secretPlain.trim()) return "Secret is required.";
     return "";
   }, [isDepositing, isConnected, address, publicClient, htlcContractAddress, amountInput, unlockAtLocal, unlockTime, secretPlain]);
 
