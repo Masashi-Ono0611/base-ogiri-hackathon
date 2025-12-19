@@ -18,7 +18,7 @@ export function AppHeader() {
         <Link href="/" aria-label="Go to top page" style={{ display: "block", width: "100%" }}>
           <div style={{ position: "relative", width: "100%", height: 44 }}>
             <Image
-              src="/MagoHODL_logo_wide_dark.png"
+              src="/MagoHODL-logo-wide-dark.png"
               alt="MagoHODL"
               fill
               sizes="(max-width: 560px) 70vw, 360px"

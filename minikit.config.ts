@@ -23,18 +23,18 @@ export const minikitConfig = {
     subtitle: "Locked Until Your Grandchildren",
     description: "MagoHODL locks crypto so it can only be passed down, not sold.",
     screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`], //todo
-    iconUrl: `${ROOT_URL}/MagoHODL_icon.png`,
-    splashImageUrl: `${ROOT_URL}/MagoHODL_hero_black.png`,
+    iconUrl: `${ROOT_URL}/MagoHODL-icon.png`,
+    splashImageUrl: `${ROOT_URL}/MagoHODL-hero-black.png`,
     splashBackgroundColor: "#000000",
     homeUrl: ROOT_URL,
     webhookUrl: `${ROOT_URL}/api/webhook`,
     primaryCategory: "social",
     tags: ["base", "btc", "inheritance", "htlc"],
-    heroImageUrl: `${ROOT_URL}/MagoHODL_hero_black.png`, 
+    heroImageUrl: `${ROOT_URL}/MagoHODL-hero-black.png`, 
     tagline: "",
     ogTitle: "",
     ogDescription: "",
-    ogImageUrl: `${ROOT_URL}/MagoHODL_hero_black.png`,
+    ogImageUrl: `${ROOT_URL}/MagoHODL-hero-black.png`,
   },
 } as const;
 
