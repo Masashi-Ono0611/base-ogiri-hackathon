@@ -17,7 +17,7 @@ It uses an HTLC-style **hashlock + timelock** contract to lock ERC20 tokens so t
 
 The current on-chain addresses used by the app are defined here:
 
-- `app/constants/onchain.ts`
+- [`app/constants/onchain.ts`](./app/constants/onchain.ts)
 
 ## Local development
 
@@ -70,7 +70,7 @@ pnpm hh:deploy:base
 
 For details, see:
 
-- `docs/contract-development.md`
+- [`docs/contract-development.md`](./docs/contract-development.md)
 
 ## Inheritance document (PDF)
 
@@ -84,16 +84,16 @@ Claim is implemented as a **commit → reveal** flow to reduce the risk of mempo
 
 For the full threat model and the commitment design, see:
 
-- `docs/front-running-and-commit-reveal.md`
+- [`docs/front-running-and-commit-reveal.md`](./docs/front-running-and-commit-reveal.md)
 
 ## Product requirements
 
 The product scope and requirements are documented here:
 
-- `docs/requirements.md`
+- [`docs/requirements.md`](./docs/requirements.md)
 
 ## Japanese summary
 
-- `SUBMIT.md`
+- [`SUBMIT.md`](./SUBMIT.md)
 
 ---
