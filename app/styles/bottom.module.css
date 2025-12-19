@@ -102,6 +102,35 @@
   margin: 0;
 }
 
+.fieldLabel {
+  font-size: 16px;
+}
+
+.detailsRight {
+  width: 100%;
+}
+
+.detailsRight > summary {
+  cursor: pointer;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  list-style: none;
+}
+
+.detailsRight > summary::-webkit-details-marker {
+  display: none;
+}
+
+.detailsRight > summary::after {
+  content: "▾";
+  margin-left: 0.25rem;
+}
+
+.detailsRight[open] > summary::after {
+  content: "▴";
+}
+
 .input {
   width: 100%;
   padding: 1rem 1.25rem;
@@ -179,17 +208,27 @@
   color: var(--color-text-muted);
   font-size: 0.9rem;
   margin: 0;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .status a {
   color: var(--color-primary);
   text-decoration: underline;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .error {
   color: var(--color-danger);
   font-size: 0.9rem;
   margin: 0;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .mono {

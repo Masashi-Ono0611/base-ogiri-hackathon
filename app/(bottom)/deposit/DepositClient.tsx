@@ -7,7 +7,6 @@ import { USDC_BASE_SEPOLIA } from "../../constants/onchain";
 import { useHtlcContractAddress } from "../../hooks/useHtlcContractAddress";
 import PdfClient from "../pdf/PdfClient";
 import { toPrintDocumentData } from "../pdf/usePdfModel";
-import hero from "../../styles/hero.module.css";
 
 export default function DepositClient() {
   const { contractAddress: htlcContractAddress } = useHtlcContractAddress();
@@ -42,7 +41,7 @@ export default function DepositClient() {
     ? "Print document (PDF)"
     : m.isDepositing
       ? "Processing..."
-      : "Approve + Create Lock";
+      : "Approve & Lock";
 
   const handlePrimaryCta = async () => {
     setPrintError("");
@@ -60,17 +59,11 @@ export default function DepositClient() {
   };
 
   return (
-    <div className={hero.hero}>
-      <div className={hero.backdrop} />
-      <div className={`${styles.card} ${hero.card} ${hero.enter}`}>
-        <h1 className={styles.title}>Deposit</h1>
+    <div className={styles.card}>
+        <h1 className={styles.title}>Lock</h1>
 
-        <div className={hero.illustration} aria-hidden>
-          <div className={hero.orb} />
-          <div className={`${hero.orb} ${hero.orb2}`} />
-        </div>
-        <div className={styles.subtitle}>
-          <strong>USDC amount</strong>
+        <div className={`${styles.subtitle} ${styles.fieldLabel}`}>
+          <strong>💰 Lock amount</strong>
         </div>
         <input
           className={styles.input}
@@ -79,8 +72,8 @@ export default function DepositClient() {
           placeholder="USDC amount to lock (e.g. 0.01)"
         />
 
-        <div className={styles.subtitle}>
-          <strong>Unlock datetime (local)</strong>
+        <div className={`${styles.subtitle} ${styles.fieldLabel}`}>
+          <strong>🕰️ Unlock datetime (local)</strong>
         </div>
         <input
           className={styles.input}
@@ -89,8 +82,8 @@ export default function DepositClient() {
           onChange={(e) => m.setUnlockAtLocal(e.target.value)}
         />
 
-        <div className={styles.subtitle}>
-          <strong>Secret</strong>
+        <div className={`${styles.subtitle} ${styles.fieldLabel}`}>
+          <strong>🔑 Secret</strong>
         </div>
         <div className={styles.inputRow}>
           <input
@@ -104,7 +97,7 @@ export default function DepositClient() {
           </button>
         </div>
 
-        <details className={styles.subtitle}>
+        <details className={`${styles.subtitle} ${styles.detailsRight}`}>
           <summary>Details</summary>
           <div>
             Chain: <span className={styles.mono}>Base Sepolia</span>
@@ -168,6 +161,5 @@ export default function DepositClient() {
 
         <PdfClient data={printData} />
       </div>
-    </div>
   );
 }
