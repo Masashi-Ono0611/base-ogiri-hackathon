@@ -23,7 +23,7 @@ export const minikitConfig = {
     subtitle: "Locked for Generations",
     description: "MagoHODL locks crypto so it can only be passed down, not sold.",
     screenshotUrls: [`${ROOT_URL}/MagoHODL-screenshot-portrait.png`], //todo
-    iconUrl: `${ROOT_URL}/MagoHODL-icon.png`,
+    iconUrl: `${ROOT_URL}/MagoHODL-icon-1024.png`,
     splashImageUrl: `${ROOT_URL}/MagoHODL_logo_black.png`,
     splashBackgroundColor: "#000000",
     homeUrl: ROOT_URL,
