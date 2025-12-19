@@ -9,8 +9,10 @@
     "lint": "eslint .",
     "hh:compile": "hardhat compile",
     "hh:test": "hardhat test",
+    "hh:deploy:base": "hardhat run scripts/deploy.ts --network base",
     "hh:deploy:base-sepolia": "hardhat run scripts/deploy.ts --network baseSepolia",
-    "hh:smoke:usdc:base-sepolia": "hardhat run scripts/smoke-usdc.ts --network baseSepolia"
+    "hh:smoke:erc20:base": "hardhat run scripts/smoke-erc20.ts --network base",
+    "hh:smoke:erc20:base-sepolia": "hardhat run scripts/smoke-erc20.ts --network baseSepolia"
   },
   "dependencies": {
     "@coinbase/onchainkit": "^1.1.2",
