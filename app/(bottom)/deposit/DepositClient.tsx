@@ -58,14 +58,26 @@ export default function DepositClient() {
         return;
       }
 
+      if (!pdfDraft.contractAddress) {
+        setPrintError("Contract address is not available yet.");
+        return;
+      }
+
+      const missing = [
+        !pdfDraft.contractAddress ? "contractAddress" : "",
+        !pdfDraft.lockId ? "lockId" : "",
+        !pdfDraft.amount ? "amount" : "",
+        !pdfDraft.unlockAtLocal ? "unlockAtLocal" : "",
+        !pdfDraft.hashlock ? "hashlock" : "",
+      ].filter(Boolean);
+      if (missing.length) {
+        setPrintError(`Printable lock data is incomplete: ${missing.join(", ")}`);
+        return;
+      }
+
       const url = new URL("/pdf-view", window.location.origin);
-      url.searchParams.set("contractAddress", pdfDraft.contractAddress);
-      url.searchParams.set("lockId", pdfDraft.lockId);
-      url.searchParams.set("chainName", pdfDraft.chainName);
-      url.searchParams.set("tokenAddress", pdfDraft.tokenAddress);
-      url.searchParams.set("amount", pdfDraft.amount);
-      url.searchParams.set("unlockAtLocal", pdfDraft.unlockAtLocal);
-      url.searchParams.set("hashlock", pdfDraft.hashlock);
+      const payload = encodeURIComponent(JSON.stringify(pdfDraft));
+      url.hash = `data=${payload}`;
 
       console.log("[pdf] openUrl for production PDF", { url: url.toString() });
       openUrl(url.toString());
