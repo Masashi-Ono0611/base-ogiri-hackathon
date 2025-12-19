@@ -95,8 +95,8 @@ export function useClaimModel() {
 
   const primaryButtonLabel = useMemo(() => {
     if (isClaiming) return "Processing...";
-    if (!commitBlockNumber) return "Commit";
-    return "Reveal & Claim";
+    if (!commitBlockNumber) return "Unlock Commit";
+    return "Reveal & Withdraw";
   }, [isClaiming, commitBlockNumber]);
 
   const isPrimaryActionDisabled = useMemo(() => {
