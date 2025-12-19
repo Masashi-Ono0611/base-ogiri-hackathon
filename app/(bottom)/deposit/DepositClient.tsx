@@ -3,7 +3,7 @@
 import styles from "../../styles/bottom.module.css";
 import { useMemo, useState } from "react";
 import { useDepositModel } from "./useDepositModel";
-import { USDC_BASE_SEPOLIA } from "../../constants/onchain";
+import { BASE_CHAIN_NAME, CBBTC_BASE_MAINNET } from "../../constants/onchain";
 import { useHtlcContractAddress } from "../../hooks/useHtlcContractAddress";
 import PdfClient from "../pdf/PdfClient";
 import { toPrintDocumentData } from "../pdf/usePdfModel";
@@ -23,8 +23,8 @@ export default function DepositClient() {
     return {
       contractAddress: htlcContractAddress,
       lockId: m.createdLock.lockId,
-      chainName: "Base Sepolia",
-      tokenAddress: USDC_BASE_SEPOLIA,
+      chainName: BASE_CHAIN_NAME,
+      tokenAddress: CBBTC_BASE_MAINNET,
       amount: m.createdLock.amountInput,
       unlockAtLocal: m.createdLock.unlockAtLocal,
       hashlock: m.createdLock.hashlock,
@@ -69,7 +69,7 @@ export default function DepositClient() {
           className={styles.input}
           value={m.amountInput}
           onChange={(e) => m.setAmountInput(e.target.value)}
-          placeholder="USDC amount to lock (e.g. 0.01)"
+          placeholder="cbBTC amount to lock (e.g. 0.00001)"
         />
 
         <div className={`${styles.subtitle} ${styles.fieldLabel}`}>
@@ -100,10 +100,10 @@ export default function DepositClient() {
         <details className={`${styles.subtitle} ${styles.detailsRight}`}>
           <summary>Details</summary>
           <div>
-            Chain: <span className={styles.mono}>Base Sepolia</span>
+            Chain: <span className={styles.mono}>{BASE_CHAIN_NAME}</span>
           </div>
           <div>
-            Token: <span className={styles.mono}>{USDC_BASE_SEPOLIA}</span>
+            Token: <span className={styles.mono}>{CBBTC_BASE_MAINNET}</span>
           </div>
           <div>
             Contract: <span className={styles.mono}>{htlcContractAddress || "(loading...)"}</span>
