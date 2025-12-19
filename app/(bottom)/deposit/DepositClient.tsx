@@ -87,19 +87,6 @@ export default function DepositClient() {
     }
   };
 
-  const handleDebugPrint = () => {
-    setPrintError("");
-
-    try {
-      const url = new URL("/pdf-debug", window.location.origin);
-      console.log("[debug] openUrl for debug PDF", { url: url.toString() });
-      openUrl(url.toString());
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      setPrintError(msg);
-    }
-  };
-
   return (
     <div className={styles.card}>
         <h1 className={styles.title}>Lock</h1>
@@ -174,12 +161,6 @@ export default function DepositClient() {
         >
           {ctaLabel}
         </button>
-
-        {false && (
-          <button type="button" className={styles.button} onClick={handleDebugPrint}>
-            Debug: Print document (PDF)
-          </button>
-        )}
 
         {m.statusDisplay && (
           <p className={m.statusTone === "error" ? styles.error : styles.status}>
