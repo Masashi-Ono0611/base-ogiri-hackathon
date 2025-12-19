@@ -20,9 +20,9 @@ export const minikitConfig = {
   miniapp: {
     version: "1",
     name: "MagoHODL",
-    subtitle: "Locked Until Your Grandchildren",
+    subtitle: "Locked for Generations",
     description: "MagoHODL locks crypto so it can only be passed down, not sold.",
-    screenshotUrls: [`${ROOT_URL}/screenshot-portrait.png`], //todo
+    screenshotUrls: [`${ROOT_URL}/MagoHODL-screenshot-portrait.png`], //todo
     iconUrl: `${ROOT_URL}/MagoHODL-icon.png`,
     splashImageUrl: `${ROOT_URL}/MagoHODL-hero-black.png`,
     splashBackgroundColor: "#000000",
