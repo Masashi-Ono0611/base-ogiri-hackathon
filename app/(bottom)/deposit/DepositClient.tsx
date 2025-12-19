@@ -1,7 +1,7 @@
 "use client";
 
 import styles from "../../styles/bottom.module.css";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useDepositModel } from "./useDepositModel";
 import { BASE_CHAIN_NAME, CBBTC_BASE_MAINNET } from "../../constants/onchain";
 import { useHtlcContractAddress } from "../../hooks/useHtlcContractAddress";
@@ -14,33 +14,6 @@ export default function DepositClient() {
   const { contractAddress: htlcContractAddress } = useHtlcContractAddress();
   const m = useDepositModel({ htlcContractAddress });
   const [printError, setPrintError] = useState<string>("");
-  const [debugPrintData, setDebugPrintData] = useState<ReturnType<typeof toPrintDocumentData> | null>(null);
-
-  const buildDebugPrintData = () => {
-    const unlockAt = (() => {
-      const d = new Date(Date.now() + 60 * 60 * 1000);
-      const pad = (n: number) => String(n).padStart(2, "0");
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    })();
-    const placeholderDraft = {
-      contractAddress: htlcContractAddress || "0x0000000000000000000000000000000000000000",
-      lockId: "0",
-      chainName: BASE_CHAIN_NAME,
-      tokenAddress: CBBTC_BASE_MAINNET,
-      amount: "0.00001",
-      unlockAtLocal: unlockAt,
-      hashlock: "0x0000000000000000000000000000000000000000000000000000000000000000",
-    };
-    return toPrintDocumentData(placeholderDraft);
-  };
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("debugPdf") === "1") {
-      setDebugPrintData(buildDebugPrintData());
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const hasPrintableLock = useMemo(() => {
     if (!m.createdLock) return false;
@@ -64,8 +37,6 @@ export default function DepositClient() {
     if (!pdfDraft) return null;
     return toPrintDocumentData(pdfDraft);
   }, [pdfDraft]);
-
-  const activePrintData = debugPrintData ?? printData;
 
   const ctaDisabled = hasPrintableLock ? false : !m.isReadyToDeposit || m.isDepositing;
   const ctaLabel = hasPrintableLock
@@ -93,8 +64,7 @@ export default function DepositClient() {
     setPrintError("");
 
     try {
-      const url = new URL(window.location.href);
-      url.searchParams.set("debugPdf", "1");
+      const url = new URL("/pdf-debug", window.location.origin);
       console.log("[debug] openUrl for debug PDF", { url: url.toString() });
       openUrl(url.toString());
     } catch (e) {
@@ -208,7 +178,7 @@ export default function DepositClient() {
 
         {printError && <p className={styles.error}>{printError}</p>}
 
-        <PdfClient data={activePrintData} />
+        <PdfClient data={printData} />
       </div>
   );
 }
