@@ -1,159 +1,99 @@
-# Waitlist Mini App Quickstart
+# MagoHODL
 
-This is a demo Mini App application built using OnchainKit and the Farcaster SDK. Build a waitlist sign-up mini app for your company that can be published to the Base app and Farcaster. 
+MagoHODL is a Base Mini App that locks crypto "for generations".
 
-> [!IMPORTANT]  
-> Before interacting with this demo, please review our [disclaimer](#disclaimer) — there are **no official tokens or apps** associated with Cubey, Base, or Coinbase.
+It uses an HTLC-style **hashlock + timelock** contract to lock ERC20 tokens so they cannot be sold until a specified unlock time. At deposit time, the recipient wallet does not need to be specified; the eventual claimant uses a secret to claim after the timelock.
 
-## Prerequisites
+## What this repo contains
 
-Before getting started, make sure you have:
+- **Mini App (Next.js App Router)** for deposit + claim.
+- **Smart contracts (Hardhat)** for the lock/claim flow.
+- **Inheritance document viewer** (HTML-based) for printing/saving.
 
-* Base app account
-* A [Farcaster](https://farcaster.xyz/) account
-* [Vercel](https://vercel.com/) account for hosting the application
-* [Coinbase Developer Platform](https://portal.cdp.coinbase.com/) Client API Key
+## Network / Token
 
-## Getting Started
+- **Chain**: Base Mainnet (chainId: 8453)
+- **Token**: cbBTC
 
-### 1. Clone this repository 
+The current on-chain addresses used by the app are defined here:
+
+- `app/constants/onchain.ts`
+
+## Local development
+
+Install dependencies:
 
 ```bash
-git clone https://github.com/base/demos.git
-```
-
-### 2. Install dependencies:
-
-```bash
-cd demos/minikit/waitlist-mini-app-qs
 pnpm install
 ```
 
-### 3. Configure environment variables
-
-Create a `.env.local` file and add your environment variables:
-
-```bash
-NEXT_PUBLIC_PROJECT_NAME="Your App Name"
-NEXT_PUBLIC_ONCHAINKIT_API_KEY=<Replace-WITH-YOUR-CDP-API-KEY>
-NEXT_PUBLIC_URL=
-```
-
-### 4. Run locally:
+Run dev server:
 
 ```bash
 pnpm dev
 ```
 
-## Customization
+## Environment variables
 
-### Update Manifest Configuration
-
-The `minikit.config.ts` file configures your manifest located at `app/.well-known/farcaster.json`.
-
-**Skip the `accountAssociation` object for now.**
-
-To personalize your app, change the `name`, `subtitle`, and `description` fields and add images to your `/public` folder. Then update their URLs in the file.
-
-## Deployment
-
-### 1. Deploy to Vercel
+Copy the example file and fill values locally:
 
 ```bash
-vercel --prod
+cp .example.env .env
 ```
 
-You should have a URL deployed to a domain similar to: `https://your-vercel-project-name.vercel.app/`
+Common variables:
 
-### 2. Update environment variables
+- `NEXT_PUBLIC_URL`
+- `NEXT_PUBLIC_PROJECT_NAME`
+- `NEXT_PUBLIC_ONCHAINKIT_API_KEY`
 
-Add your production URL to your local `.env` file:
+Hardhat variables:
+
+- `BASE_RPC_URL`
+- `DEPLOYER_PRIVATE_KEY`
+- `BASESCAN_API_KEY` (optional, for verification)
+
+## Contract development
+
+Compile / test:
 
 ```bash
-NEXT_PUBLIC_PROJECT_NAME="Your App Name"
-NEXT_PUBLIC_ONCHAINKIT_API_KEY=<Replace-WITH-YOUR-CDP-API-KEY>
-NEXT_PUBLIC_URL=https://your-vercel-project-name.vercel.app/
+pnpm hh:compile
+pnpm hh:test
 ```
 
-### 3. Upload environment variables to Vercel
-
-Add environment variables to your production environment:
+Deploy to Base Mainnet:
 
 ```bash
-vercel env add NEXT_PUBLIC_PROJECT_NAME production
-vercel env add NEXT_PUBLIC_ONCHAINKIT_API_KEY production
-vercel env add NEXT_PUBLIC_URL production
+pnpm hh:deploy:base
 ```
 
-## Account Association
+For details, see:
 
-### 1. Sign Your Manifest
+- `docs/contract-development.md`
 
-1. Navigate to [Farcaster Manifest tool](https://farcaster.xyz/~/developers/mini-apps/manifest)
-2. Paste your domain in the form field (ex: your-vercel-project-name.vercel.app)
-3. Click the `Generate account association` button and follow the on-screen instructions for signing with your Farcaster wallet
-4. Copy the `accountAssociation` object
+## Inheritance document (PDF)
 
-### 2. Update Configuration
+The app renders a printable document as HTML.
 
-Update your `minikit.config.ts` file to include the `accountAssociation` object:
+In the Base app, `window.print()` may be restricted. The current UX opens a dedicated viewer page in the in-app browser.
 
-```ts
-export const minikitConfig = {
-    accountAssociation: {
-        "header": "your-header-here",
-        "payload": "your-payload-here",
-        "signature": "your-signature-here"
-    },
-    frame: {
-        // ... rest of your frame configuration
-    },
-}
-```
+## Security: front-running resistance
 
-### 3. Deploy Updates
+Claim is implemented as a **commit → reveal** flow to reduce the risk of mempool observers copying a reveal transaction.
 
-```bash
-vercel --prod
-```
+For the full threat model and the commitment design, see:
 
-## Testing and Publishing
+- `docs/front-running-and-commit-reveal.md`
 
-### 1. Preview Your App
+## Product requirements
 
-Go to [base.dev/preview](https://base.dev/preview) to validate your app:
+The product scope and requirements are documented here:
 
-1. Add your app URL to view the embeds and click the launch button to verify the app launches as expected
-2. Use the "Account association" tab to verify the association credentials were created correctly
-3. Use the "Metadata" tab to see the metadata added from the manifest and identify any missing fields
+- `docs/requirements.md`
 
-### 2. Publish to Base App
+## Japanese summary
 
-To publish your app, create a post in the Base app with your app's URL.
-
-## Learn More
-
-For detailed step-by-step instructions, see the [Create a Mini App tutorial](https://docs.base.org/docs/mini-apps/quickstart/create-new-miniapp/) in the Base documentation.
-
-
----
-
-## Disclaimer  
-
-This project is a **demo application** created by the **Base / Coinbase Developer Relations team** for **educational and demonstration purposes only**.  
-
-**There is no token, cryptocurrency, or investment product associated with Cubey, Base, or Coinbase.**  
-
-Any social media pages, tokens, or applications claiming to be affiliated with, endorsed by, or officially connected to Cubey, Base, or Coinbase are **unauthorized and fraudulent**.  
-
-We do **not** endorse or support any third-party tokens, apps, or projects using the Cubey name or branding.  
-
-> [!WARNING]
-> Do **not** purchase, trade, or interact with any tokens or applications claiming affiliation with Coinbase, Base, or Cubey.  
-> Coinbase and Base will never issue a token or ask you to connect your wallet for this demo.  
-
-For official Base developer resources, please visit:  
-- [https://base.org](https://base.org)  
-- [https://docs.base.org](https://docs.base.org)  
+- `SUBMIT.md`
 
 ---

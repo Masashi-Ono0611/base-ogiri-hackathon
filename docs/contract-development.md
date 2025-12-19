@@ -1,6 +1,6 @@
-# Contract Development (Hardhat) — Base Sepolia
+# Contract Development (Hardhat) — Base Mainnet
 
-This repository includes a minimal Hardhat setup for Base Sepolia contract development.
+This repository includes a minimal Hardhat setup for Base Mainnet contract development.
 
 ## Prerequisites
 - Node.js: use a **Hardhat-supported** version (current version: **22 LTS**).
@@ -14,7 +14,7 @@ cp .example.env .env
 ```
 
 Required variables for deployment:
-- `BASE_SEPOLIA_RPC_URL` — Base Sepolia RPC endpoint
+- `BASE_RPC_URL` — Base Mainnet RPC endpoint
 - `DEPLOYER_PRIVATE_KEY` — private key for deployment account (DO NOT commit)
 
 Notes:
@@ -32,9 +32,9 @@ pnpm hh:compile
 pnpm hh:test
 ```
 
-### Deploy to Base Sepolia
+### Deploy to Base Mainnet
 ```bash
-pnpm hh:deploy:base-sepolia
+pnpm hh:deploy:base
 ```
 
 Deployment script:
@@ -49,6 +49,6 @@ Deployment script:
 ## Common Issues
 - **Hardhat warns about unsupported Node versions**: switch to Node 20/22.
 
-## Base Sepolia References
-- Chain name: Base Sepolia
-- Token (initial target): USDC `0x036CbD53842c5426634e7929541eC2318f3dCF7e`
+## Base Mainnet References
+- Chain name: Base
+- Explorer: https://basescan.org

@@ -3,8 +3,8 @@
 ## 1. Goal
 Build a Base Mini App that enables a “grandchild token inheritance” flow using a **Hashlock + Timelock** contract.
 
-- Chain: **Base Sepolia**
-- Token (initial): **USDC** `0x036CbD53842c5426634e7929541eC2318f3dCF7e`
+- Chain: **Base Mainnet**
+- Token (initial): **cbBTC** `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`
 - Core idea: The depositor locks ERC20 funds into a contract.
   - A **secret hash** is stored on-chain.
   - A **timelock (unlock after time)** is stored on-chain.
@@ -14,7 +14,7 @@ Build a Base Mini App that enables a “grandchild token inheritance” flow usi
 
 ## 2. Non-goals (initial scope)
 - Multi-chain support
-- Multi-token UI (beyond USDC)
+- Multi-token UI (beyond cbBTC)
 - Legal advice or guaranteeing legal validity in all jurisdictions
 - Custody or key recovery
 
@@ -28,7 +28,7 @@ Build a Base Mini App that enables a “grandchild token inheritance” flow usi
   - token amount
   - unlock date/time 
   - secret (user-provided or auto-generated)
-- As a depositor, I can approve USDC spending and deposit to the contract.
+- As a depositor, I can approve cbBTC spending and deposit to the contract.
 - As a depositor, I can see:
   - deposit tx hash
   - created lock contract address (if per-lock proxy)
@@ -41,8 +41,8 @@ Build a Base Mini App that enables a “grandchild token inheritance” flow usi
 - The PDF must include:
   - contract address
   - lock id
-  - chain name (Base Sepolia)
-  - token contract address (USDC)
+  - chain name (Base)
+  - token contract address (cbBTC)
   - amount
   - timelock/unlock date
   - hashlock (hash)
@@ -139,7 +139,7 @@ Operational requirement:
   - After lock creation, enable a print button for the inheritance document.
   - Lock details are auto-filled from the deposit transaction.
   - Names/signature/date are handwritten after printing.
-  - Button: print / save as PDF.
+  - Button: open a dedicated viewer page in the in-app browser.
   - Prefer a single primary CTA on the Deposit page that switches from "Approve + Create Lock" to "Print document (PDF)" after lock creation.
 - **Claim screen**
   - Inputs: lockId, secret.
@@ -157,13 +157,13 @@ Operational requirement:
 
 ### 6.4 PDF Generation
 - Client-side generation preferred to avoid server complexity.
-- Initial implementation may use an HTML template + `window.print()` and rely on the browser's "Save as PDF".
+- In Base app, `window.print()` may be restricted; prefer opening a dedicated viewer page via MiniKit `openUrl()`.
 - If one-click PDF binary generation becomes necessary later, consider `pdf-lib` with a bundled Japanese font.
 - Document structure:
   - Heading
   - Parties (depositor/claimant)
   - Statement of intent
-  - Asset details (USDC, amount)
+  - Asset details (cbBTC, amount)
   - Lock details (contract address/lockId, hashlock, timelock)
   - Signature area
 
@@ -185,4 +185,4 @@ Operational requirement:
 ## 8. Acceptance Criteria
 - `pnpm build` passes.
 - `trivy repo .` remains at 0 vulnerabilities.
-- Deposit → PDF generation → Claim flow works on Base Sepolia for USDC.
+- Deposit → PDF viewer → Claim flow works on Base Mainnet for cbBTC.
