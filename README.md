@@ -1,4 +1,4 @@
-# MagoHODL
+# MagoHODL 🔐👶
 
 MagoHODL is a Base Mini App that locks crypto "for generations".
 
