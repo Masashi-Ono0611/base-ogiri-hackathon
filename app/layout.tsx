@@ -9,6 +9,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: minikitConfig.miniapp.name,
     description: minikitConfig.miniapp.description,
+    icons: {
+      icon: [{ url: "/MagoHODL_icon.png", type: "image/png" }],
+      shortcut: ["/MagoHODL_icon.png"],
+      apple: [{ url: "/MagoHODL_icon.png", type: "image/png" }],
+    },
     other: {
       "base:app_id": "69414bb4d77c069a945bdf55",
       "fc:frame": JSON.stringify({

@@ -132,9 +132,11 @@
 }
 
 .input {
+  display: block;
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  box-sizing: border-box;
   padding: 1rem 1.25rem;
   font-size: 1rem;
   background: var(--color-surface-2);
@@ -143,6 +145,21 @@
   color: var(--color-text);
   backdrop-filter: blur(10px);
   transition: all 0.2s ease;
+}
+
+.input[type="datetime-local"] {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  overflow: hidden;
+}
+
+.input[type="datetime-local"]::-webkit-date-and-time-value {
+  text-align: left;
 }
 
 .input::placeholder {
