@@ -53,7 +53,22 @@ export default function DepositClient() {
     }
 
     try {
-      window.print();
+      if (!pdfDraft) {
+        setPrintError("Printable lock data is not available.");
+        return;
+      }
+
+      const url = new URL("/pdf-view", window.location.origin);
+      url.searchParams.set("contractAddress", pdfDraft.contractAddress);
+      url.searchParams.set("lockId", pdfDraft.lockId);
+      url.searchParams.set("chainName", pdfDraft.chainName);
+      url.searchParams.set("tokenAddress", pdfDraft.tokenAddress);
+      url.searchParams.set("amount", pdfDraft.amount);
+      url.searchParams.set("unlockAtLocal", pdfDraft.unlockAtLocal);
+      url.searchParams.set("hashlock", pdfDraft.hashlock);
+
+      console.log("[pdf] openUrl for production PDF", { url: url.toString() });
+      openUrl(url.toString());
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setPrintError(msg);
