@@ -24,7 +24,7 @@ export const minikitConfig = {
     description: "MagoHODL locks crypto so it can only be passed down, not sold.",
     screenshotUrls: [`${ROOT_URL}/MagoHODL-screenshot-portrait.png`], //todo
     iconUrl: `${ROOT_URL}/MagoHODL-icon.png`,
-    splashImageUrl: `${ROOT_URL}/MagoHODL-hero-black.png`,
+    splashImageUrl: `${ROOT_URL}/MagoHODL_logo_black.png`,
     splashBackgroundColor: "#000000",
     homeUrl: ROOT_URL,
     webhookUrl: `${ROOT_URL}/api/webhook`,
