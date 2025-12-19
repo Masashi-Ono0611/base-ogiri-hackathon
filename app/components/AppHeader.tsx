@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   ConnectWallet,
   Wallet,
@@ -15,18 +16,15 @@ export function AppHeader() {
     <header className={styles.header}>
       <div className={styles.brand}>
         <Link href="/" aria-label="Go to top page" style={{ display: "block", width: "100%" }}>
-          <img
-            src="/MagoHODL_logo_wide_dark.png"
-            alt="MagoHODL"
-            style={{
-              width: "100%",
-              height: "auto",
-              maxHeight: 44,
-              objectFit: "contain",
-              objectPosition: "left center",
-              display: "block",
-            }}
-          />
+          <div style={{ position: "relative", width: "100%", height: 44 }}>
+            <Image
+              src="/MagoHODL_logo_wide_dark.png"
+              alt="MagoHODL"
+              fill
+              sizes="(max-width: 560px) 70vw, 360px"
+              style={{ objectFit: "contain", objectPosition: "left center" }}
+            />
+          </div>
         </Link>
       </div>
 
