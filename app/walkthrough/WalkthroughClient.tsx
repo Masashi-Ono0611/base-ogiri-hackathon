@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import bottomStyles from "../styles/bottom.module.css";
@@ -11,11 +11,17 @@ export default function WalkthroughClient() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/deposit";
 
+  type WalkthroughStep = {
+    title: string;
+    body: string;
+    imageSrc: string;
+  };
+
   const steps = useMemo(
-    () => [
+    (): WalkthroughStep[] => [
       {
         title: "What is MagoHODL?",
-        body: "A crypto dapp for passing funds to your grandchildren. Your funds are time-locked, so cannot be sold early.",
+        body: "A dapp for passing your crypto to your grandchildren. Your crypto are time-locked, so cannot be sold early.",
         imageSrc: "/MagoHODL_step1.png",
       },
       {
@@ -31,6 +37,14 @@ export default function WalkthroughClient() {
     ],
     [],
   );
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    for (const step of steps) {
+      const img = new window.Image();
+      img.src = step.imageSrc;
+    }
+  }, [steps]);
 
   const [index, setIndex] = useState(0);
   const isLast = index === steps.length - 1;
