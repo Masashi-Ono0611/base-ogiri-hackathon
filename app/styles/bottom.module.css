@@ -10,7 +10,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem;
+  padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--color-border);
   background: var(--color-overlay);
   backdrop-filter: blur(12px);
@@ -21,8 +21,9 @@
 
 .brand {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  align-items: flex-start;
 }
 
 .brandTitle {

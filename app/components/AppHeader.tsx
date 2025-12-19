@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   ConnectWallet,
   Wallet,
@@ -13,8 +14,20 @@ export function AppHeader() {
   return (
     <header className={styles.header}>
       <div className={styles.brand}>
-        <div className={styles.brandTitle}>Token Inheritance</div>
-        <div className={styles.brandSubtitle}>Secure timelocked gifts.</div>
+        <Link href="/" aria-label="Go to top page" style={{ display: "block", width: "100%" }}>
+          <img
+            src="/MagoHODL_logo_wide_dark.png"
+            alt="MagoHODL"
+            style={{
+              width: "100%",
+              height: "auto",
+              maxHeight: 44,
+              objectFit: "contain",
+              objectPosition: "left center",
+              display: "block",
+            }}
+          />
+        </Link>
       </div>
 
       <Wallet>
