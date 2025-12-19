@@ -163,9 +163,11 @@ export default function DepositClient() {
           {ctaLabel}
         </button>
 
-        <button type="button" className={styles.button} onClick={handleDebugPrint}>
-          Debug: Print document (PDF)
-        </button>
+        {false && (
+          <button type="button" className={styles.button} onClick={handleDebugPrint}>
+            Debug: Print document (PDF)
+          </button>
+        )}
 
         {m.statusDisplay && (
           <p className={m.statusTone === "error" ? styles.error : styles.status}>
