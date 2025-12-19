@@ -12,6 +12,7 @@ export default function DepositClient() {
   const { contractAddress: htlcContractAddress } = useHtlcContractAddress();
   const m = useDepositModel({ htlcContractAddress });
   const [printError, setPrintError] = useState<string>("");
+  const [debugPrintData, setDebugPrintData] = useState<ReturnType<typeof toPrintDocumentData> | null>(null);
 
   const hasPrintableLock = useMemo(() => {
     if (!m.createdLock) return false;
@@ -36,6 +37,8 @@ export default function DepositClient() {
     return toPrintDocumentData(pdfDraft);
   }, [pdfDraft]);
 
+  const activePrintData = debugPrintData ?? printData;
+
   const ctaDisabled = hasPrintableLock ? false : !m.isReadyToDeposit || m.isDepositing;
   const ctaLabel = hasPrintableLock
     ? "Print document (PDF)"
@@ -52,6 +55,37 @@ export default function DepositClient() {
 
     try {
       window.print();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setPrintError(msg);
+    }
+  };
+
+  const handleDebugPrint = () => {
+    setPrintError("");
+
+    const unlockAt = (() => {
+      const d = new Date(Date.now() + 60 * 60 * 1000);
+      const pad = (n: number) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    })();
+    const placeholderDraft = {
+      contractAddress: htlcContractAddress || "0x0000000000000000000000000000000000000000",
+      lockId: "0",
+      chainName: BASE_CHAIN_NAME,
+      tokenAddress: CBBTC_BASE_MAINNET,
+      amount: "0.00001",
+      unlockAtLocal: unlockAt,
+      hashlock: "0x0000000000000000000000000000000000000000000000000000000000000000",
+    };
+
+    const data = toPrintDocumentData(placeholderDraft);
+    setDebugPrintData(data);
+
+    try {
+      console.log("[debug] PDF print button clicked", { placeholderDraft });
+      window.print();
+      console.log("[debug] window.print() finished");
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
       setPrintError(msg);
@@ -133,6 +167,10 @@ export default function DepositClient() {
           {ctaLabel}
         </button>
 
+        <button type="button" className={styles.button} onClick={handleDebugPrint}>
+          Debug: Print document (PDF)
+        </button>
+
         {m.statusDisplay && (
           <p className={m.statusTone === "error" ? styles.error : styles.status}>
             <strong>Status:</strong> {m.statusDisplay}
@@ -159,7 +197,7 @@ export default function DepositClient() {
 
         {printError && <p className={styles.error}>{printError}</p>}
 
-        <PdfClient data={printData} />
+        <PdfClient data={activePrintData} />
       </div>
   );
 }
