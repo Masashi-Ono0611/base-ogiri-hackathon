@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { encodePacked, keccak256, type Hex } from "viem";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
-import { BASE_SEPOLIA_EXPLORER_BASE_URL } from "../../constants/onchain";
+import { BASE_EXPLORER_BASE_URL } from "../../constants/onchain";
 import { htlcAbi } from "../../abi/htlcAbi";
 import { randomHex, secretStringToHex } from "../../lib/crypto";
 import { useHtlcContractAddress } from "../../hooks/useHtlcContractAddress";
@@ -35,8 +35,8 @@ export function useClaimModel() {
   const [revealTxHash, setRevealTxHash] = useState<`0x${string}` | "">("");
   const [revealTxStage, setRevealTxStage] = useState<TxStage>("broadcast complete");
 
-  const commitExplorerUrl = commitTxHash ? `${BASE_SEPOLIA_EXPLORER_BASE_URL}/tx/${commitTxHash}` : "";
-  const revealExplorerUrl = revealTxHash ? `${BASE_SEPOLIA_EXPLORER_BASE_URL}/tx/${revealTxHash}` : "";
+  const commitExplorerUrl = commitTxHash ? `${BASE_EXPLORER_BASE_URL}/tx/${commitTxHash}` : "";
+  const revealExplorerUrl = revealTxHash ? `${BASE_EXPLORER_BASE_URL}/tx/${revealTxHash}` : "";
 
   const preflightError = useMemo(() => {
     if (isClaiming) return "";

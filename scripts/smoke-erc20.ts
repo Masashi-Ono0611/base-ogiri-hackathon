@@ -2,7 +2,7 @@ import hre from "hardhat";
 
 const { ethers } = hre as any;
 
-const USDC_BASE_SEPOLIA = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
+const DEFAULT_TOKEN_ADDRESS = "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf";
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -10,21 +10,26 @@ function requireEnv(name: string): string {
   return v;
 }
 
-async function safeBalanceOf(usdc: any, address: string, blockTag?: number) {
-  if (blockTag === undefined) return (await usdc.balanceOf(address)) as bigint;
+function envOrDefault(name: string, defaultValue: string): string {
+  const v = process.env[name];
+  return v && v.length > 0 ? v : defaultValue;
+}
+
+async function safeBalanceOf(token: any, address: string, blockTag?: number) {
+  if (blockTag === undefined) return (await token.balanceOf(address)) as bigint;
 
   try {
-    return (await usdc.balanceOf(address, { blockTag })) as bigint;
+    return (await token.balanceOf(address, { blockTag })) as bigint;
   } catch (e: any) {
     console.log("balanceOf(blockTag) failed, falling back to latest. blockTag=", blockTag, "error=", e?.message ?? e);
-    return (await usdc.balanceOf(address)) as bigint;
+    return (await token.balanceOf(address)) as bigint;
   }
 }
 
-async function logUsdcBalances(label: string, usdc: any, wallet: string, contractAddress: string, blockTag?: number) {
-  const walletBal = await safeBalanceOf(usdc, wallet, blockTag);
-  const contractBal = await safeBalanceOf(usdc, contractAddress, blockTag);
-  console.log(`[${label}] walletUSDC=${walletBal.toString()} contractUSDC=${contractBal.toString()}`);
+async function logTokenBalances(label: string, token: any, wallet: string, contractAddress: string, blockTag?: number) {
+  const walletBal = await safeBalanceOf(token, wallet, blockTag);
+  const contractBal = await safeBalanceOf(token, contractAddress, blockTag);
+  console.log(`[${label}] walletToken=${walletBal.toString()} contractToken=${contractBal.toString()}`);
   return { walletBal, contractBal };
 }
 
@@ -55,29 +60,30 @@ async function waitForNoPendingTx(address: string) {
 
 async function main() {
   const contractAddress = requireEnv("HTLC_CONTRACT_ADDRESS");
+  const tokenAddress = envOrDefault("ERC20_TOKEN_ADDRESS", DEFAULT_TOKEN_ADDRESS);
 
   const [signer] = await ethers.getSigners();
 
-  const usdc = await ethers.getContractAt(
+  const token = await ethers.getContractAt(
     [
       "function decimals() view returns (uint8)",
       "function balanceOf(address) view returns (uint256)",
       "function approve(address spender, uint256 value) returns (bool)",
       "event Transfer(address indexed from, address indexed to, uint256 value)",
     ],
-    USDC_BASE_SEPOLIA,
+    tokenAddress,
     signer
   );
 
   const htlc = await ethers.getContractAt("InheritanceHTLCTimelock", contractAddress, signer);
 
-  const decimals: number = await usdc.decimals();
-  const amount = ethers.parseUnits("0.01", decimals);
+  const decimals: number = await token.decimals();
+  const amount = ethers.parseUnits("0.00001", decimals);
 
-  const before = await logUsdcBalances("before", usdc, signer.address, contractAddress);
+  const before = await logTokenBalances("before", token, signer.address, contractAddress);
 
   if (before.walletBal < amount) {
-    throw new Error("Insufficient USDC balance for smoke test. Please fund the deployer with Base Sepolia USDC.");
+    throw new Error("Insufficient token balance for smoke test. Please fund the deployer with the configured ERC20 token.");
   }
 
   const secretBytes = ethers.randomBytes(32);
@@ -92,22 +98,23 @@ async function main() {
   const unlockTime = BigInt((latest?.timestamp ?? 0) + unlockDelaySeconds);
 
   console.log("HTLC contract:", contractAddress);
+  console.log("Token:", tokenAddress);
   console.log("Hashlock:", hashlock);
   console.log("UnlockTime (unix):", unlockTime.toString());
 
   await waitForNoPendingTx(signer.address);
-  const approveTx = await usdc.approve(contractAddress, amount);
+  const approveTx = await token.approve(contractAddress, amount);
   console.log("Approve tx:", approveTx.hash);
   await approveTx.wait();
 
   await waitForNoPendingTx(signer.address);
-  const createTx = await htlc.createLock(USDC_BASE_SEPOLIA, amount, hashlock, Number(unlockTime));
+  const createTx = await htlc.createLock(tokenAddress, amount, hashlock, Number(unlockTime));
   console.log("CreateLock tx:", createTx.hash);
   const receipt = await createTx.wait();
 
   await sleep(2_000);
 
-  const afterCreate = await logUsdcBalances("after create", usdc, signer.address, contractAddress, receipt.blockNumber);
+  const afterCreate = await logTokenBalances("after create", token, signer.address, contractAddress, receipt.blockNumber);
   console.log(
     `[delta after create] wallet=${(afterCreate.walletBal - before.walletBal).toString()} contract=${(
       afterCreate.contractBal - before.contractBal
@@ -161,7 +168,7 @@ async function main() {
 
   await sleep(2_000);
 
-  const afterClaim = await logUsdcBalances("after claim", usdc, signer.address, contractAddress, revealReceipt.blockNumber);
+  const afterClaim = await logTokenBalances("after claim", token, signer.address, contractAddress, revealReceipt.blockNumber);
   console.log(
     `[delta total] wallet=${(afterClaim.walletBal - before.walletBal).toString()} contract=${(
       afterClaim.contractBal - before.contractBal

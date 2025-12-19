@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { decodeEventLog, keccak256, parseUnits, type Hex, type Log } from "viem";
 import { useAccount, usePublicClient, useWriteContract } from "wagmi";
-import { BASE_SEPOLIA_EXPLORER_BASE_URL, USDC_BASE_SEPOLIA, USDC_DECIMALS } from "../../constants/onchain";
+import { BASE_EXPLORER_BASE_URL, CBBTC_BASE_MAINNET, CBBTC_DECIMALS } from "../../constants/onchain";
 import { erc20Abi } from "../../abi/erc20Abi";
 import { htlcAbi } from "../../abi/htlcAbi";
 import { generateHumanSecret, secretStringToHex } from "../../lib/crypto";
@@ -35,7 +35,7 @@ export function useDepositModel({ htlcContractAddress }: Params) {
   const publicClient = usePublicClient();
   const { writeContractAsync } = useWriteContract();
 
-  const [amountInput, setAmountInput] = useState("0.01");
+  const [amountInput, setAmountInput] = useState("0.00001");
   const [unlockAtLocal, setUnlockAtLocal] = useState<string>("");
   const [secretPlain, setSecretPlain] = useState<string>("");
 
@@ -52,8 +52,8 @@ export function useDepositModel({ htlcContractAddress }: Params) {
   const [createTxHash, setCreateTxHash] = useState<`0x${string}` | "">("");
   const [createTxStage, setCreateTxStage] = useState<TxStage>("broadcast complete");
 
-  const approveExplorerUrl = approveTxHash ? `${BASE_SEPOLIA_EXPLORER_BASE_URL}/tx/${approveTxHash}` : "";
-  const createExplorerUrl = createTxHash ? `${BASE_SEPOLIA_EXPLORER_BASE_URL}/tx/${createTxHash}` : "";
+  const approveExplorerUrl = approveTxHash ? `${BASE_EXPLORER_BASE_URL}/tx/${approveTxHash}` : "";
+  const createExplorerUrl = createTxHash ? `${BASE_EXPLORER_BASE_URL}/tx/${createTxHash}` : "";
 
   const secretHex = useMemo(() => secretStringToHex(secretPlain), [secretPlain]);
   const hashlock = useMemo(() => {
@@ -89,7 +89,7 @@ export function useDepositModel({ htlcContractAddress }: Params) {
     if (!amountInput.trim()) return "Amount is required.";
 
     try {
-      const amount = parseUnits(amountInput, USDC_DECIMALS);
+      const amount = parseUnits(amountInput, CBBTC_DECIMALS);
       if (amount <= BigInt(0)) return "Amount must be > 0";
     } catch {
       return "Amount is invalid.";
@@ -97,7 +97,7 @@ export function useDepositModel({ htlcContractAddress }: Params) {
 
     if (!unlockAtLocal) return "Unlock datetime is required.";
     if (unlockTime <= BigInt(Math.floor(Date.now() / 1000))) return "Unlock time must be in the future.";
-    if (!secretPlain.trim()) return "Secret is required. Enter a phrase you will remember.";
+    if (!secretPlain.trim()) return "Secret is required.";
     return "";
   }, [isDepositing, isConnected, address, publicClient, htlcContractAddress, amountInput, unlockAtLocal, unlockTime, secretPlain]);
 
@@ -123,7 +123,7 @@ export function useDepositModel({ htlcContractAddress }: Params) {
     if (unlockTime <= BigInt(Math.floor(Date.now() / 1000))) return false;
 
     try {
-      const amount = parseUnits(amountInput, USDC_DECIMALS);
+      const amount = parseUnits(amountInput, CBBTC_DECIMALS);
       if (amount <= BigInt(0)) return false;
     } catch {
       return false;
@@ -167,7 +167,7 @@ export function useDepositModel({ htlcContractAddress }: Params) {
 
     let amount: bigint;
     try {
-      amount = parseUnits(amountInput, USDC_DECIMALS);
+      amount = parseUnits(amountInput, CBBTC_DECIMALS);
     } catch {
       setStatus("Amount is invalid.");
       setStatusIsError(true);
@@ -186,10 +186,10 @@ export function useDepositModel({ htlcContractAddress }: Params) {
 
     setIsDepositing(true);
     try {
-      setStatus("Approving USDC...");
+      setStatus("Approving cbBTC...");
       setStatusIsError(false);
       const approveHash = await writeContractAsync({
-        address: USDC_BASE_SEPOLIA,
+        address: CBBTC_BASE_MAINNET,
         abi: erc20Abi,
         functionName: "approve",
         args: [htlcContractAddress, amount],
@@ -205,7 +205,7 @@ export function useDepositModel({ htlcContractAddress }: Params) {
         address: htlcContractAddress,
         abi: htlcAbi,
         functionName: "createLock",
-        args: [USDC_BASE_SEPOLIA, amount, hashlock as Hex, unlockTime],
+        args: [CBBTC_BASE_MAINNET, amount, hashlock as Hex, unlockTime],
       });
       setCreateTxHash(createHash);
       setCreateTxStage("broadcast complete");

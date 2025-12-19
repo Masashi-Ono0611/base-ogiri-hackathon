@@ -2,7 +2,7 @@
 
 import styles from "../../styles/bottom.module.css";
 import { useClaimModel } from "./useClaimModel";
-import { USDC_BASE_SEPOLIA } from "../../constants/onchain";
+import { BASE_CHAIN_NAME, CBBTC_BASE_MAINNET } from "../../constants/onchain";
 import { useHtlcContractAddress } from "../../hooks/useHtlcContractAddress";
 
 export default function ClaimClient() {
@@ -36,10 +36,10 @@ export default function ClaimClient() {
       <details className={`${styles.subtitle} ${styles.detailsRight}`}>
         <summary>Details</summary>
         <div>
-          Chain: <span className={styles.mono}>Base Sepolia</span>
+          Chain: <span className={styles.mono}>{BASE_CHAIN_NAME}</span>
         </div>
         <div>
-          Token: <span className={styles.mono}>{USDC_BASE_SEPOLIA}</span>
+          Token: <span className={styles.mono}>{CBBTC_BASE_MAINNET}</span>
         </div>
         <div>
           Contract: <span className={styles.mono}>{htlcContractAddress || "(loading...)"}</span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { USDC_BASE_SEPOLIA } from "../../constants/onchain";
+import { BASE_CHAIN_NAME, CBBTC_BASE_MAINNET } from "../../constants/onchain";
 import { type PrintDocumentData } from "./PrintDocument";
 
 export type PdfDraft = {
@@ -32,8 +32,8 @@ export function toPrintDocumentData(draft: PdfDraft): PrintDocumentData {
 
   return {
     documentTitle: DOCUMENT_TITLE,
-    chainName: draft.chainName || "Base Sepolia",
-    tokenAddress: draft.tokenAddress || USDC_BASE_SEPOLIA,
+    chainName: draft.chainName || BASE_CHAIN_NAME,
+    tokenAddress: draft.tokenAddress || CBBTC_BASE_MAINNET,
     amount: draft.amount,
     contractAddress: draft.contractAddress,
     lockId: draft.lockId,

@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useMiniKit } from "@coinbase/onchainkit/minikit";
 import styles from "../styles/bottom.module.css";
-import { BASE_SEPOLIA_CHAIN_ID } from "../constants/onchain";
+import { BASE_CHAIN_ID } from "../constants/onchain";
 import { useMiniAppCapabilities } from "../hooks/useMiniAppCapabilities";
 import { useAutoSwitchChain } from "../hooks/useAutoSwitchChain";
 import { MiniAppDebug } from "../components/MiniAppDebug";
@@ -16,7 +16,7 @@ export function BottomLayoutClient({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
   const { isFrameReady, setFrameReady } = useMiniKit();
 
-  const targetChainId = BASE_SEPOLIA_CHAIN_ID;
+  const targetChainId = BASE_CHAIN_ID;
   const { isWrongNetwork, switchError, isSwitching, switchToTargetChain } = useAutoSwitchChain({
     targetChainId,
   });
