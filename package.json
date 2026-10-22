@@ -46,7 +46,7 @@
     "overrides": {
       "@farcaster/miniapp-sdk": "0.2.1",
       "use-sync-external-store": "1.4.0",
-      "shell-quote": ">=1.8.4"
+      "shell-quote": "^1.8.4"
     }
   },
   "engines": {
